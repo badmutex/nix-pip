@@ -103,7 +103,7 @@ if __name__ == '__main__':
     logging.getLogger('requests').setLevel('WARNING')
 
     # G = package.build_graph(['bucket-list'])
-    G = package.Graph.from_names(['munch', 'cryptography'], extraPackages=set(['openssl']))
+    G = package.Graph.from_names(['cloudmesh_client'], extraPackages=set(['openssl', 'libffi']))
 
     packages = dict([(p.name, p) for p in G.nodes()])
 
