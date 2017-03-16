@@ -18,7 +18,7 @@ import tempfile
 from munch import munchify
 import networkx as nx
 import requests
-from traits.api import HasTraits, Dict, Str, Enum, Set, This, Trait, Long, ListUnicode, This
+from traits.api import HasTraits, Dict, Str, Enum, Set, This, Trait, Long, ListUnicode, This, Bool
 
 import pkg_resources
 python_bare = pkg_resources.resource_filename(__name__, 'data/python-bare.nix')
@@ -170,6 +170,7 @@ class Package(HasTraits):
     dependencies = Set(This)
     preinstalled = Set(Str)
     buildInputs = Set(Str)
+    doCheck = Bool(True)
     sha256 = Str(minlength=64, maxlength=64)  # 64 is the length of the sha256 hexdigest
 
     def __eq__(self, other):
