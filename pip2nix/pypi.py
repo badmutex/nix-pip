@@ -1,58 +1,18 @@
-from __future__ import print_function
 
-from pip2nix.nixshell import NixShell
+from munch import Munch, munchify
+import requests
+from traits.api import HasTraits, Trait, File, Enum, Str, Dict, Int
 
-from collections import defaultdict
-from contextlib import contextmanager
 import hashlib
 import json
 import logging
 import os.path
-from pipes import quote
 import re
-import shutil
-from subprocess import check_output, check_call
 import sys
-import tempfile
 
-from munch import munchify
-import networkx as nx
-import requests
-from traits.api import HasTraits, Dict, Str, Enum, Set, This, Trait, Long, ListUnicode, This, Bool
-
-import pkg_resources
-python_bare = pkg_resources.resource_filename(__name__, 'data/python-bare.nix')
+from collections import defaultdict
 
 logger = logging.getLogger(__name__)
-
-
-@contextmanager
-def tmpdir():
-    d = tempfile.mkdtemp()
-    try:
-        yield d
-    finally:
-        shutil.rmtree(d)
-
-
-@contextmanager
-def tmpfile():
-    fd, path = tempfile.mkstemp()
-    os.close(fd)
-    try:
-        yield path
-    finally:
-        os.unlink(path)
-
-
-@contextmanager
-def tmpvenv(python='python', venvdir=None, extraPackages=None):
-
-    with tmpdir() as venvdir:
-        shell = NixShell(python_bare, packages=extraPackages)
-        shell.command(['virtualenv', venvdir])
-        pip = os.path.join(venvdir, 'bin', 'pip')
-        yield (shell, venvdir, pip)
 
 
 def is_wheel(filename):
@@ -76,155 +36,171 @@ def is_universal_wheel(filename):
     return truth
 
 
-def select_release(releases):
-    groups = defaultdict(list)
-    for r in releases:
-        groups[r.packagetype].append(r)
+def identify_release_kind(release):
 
-    if groups['universal']:
-        result = groups['universal']
-    elif groups['source']:
-        result = groups['source']
-    elif groups['binary']:
-        raise NotImplementedError('Binary distributions are not supported')
+    if release.packagetype == 'sdist':
+        ptype = 'source'
+    elif release.packagetype == 'bdist_wheel' and is_universal_wheel(release.filename):
+        ptype = 'universal'
+    elif release.packagetype == 'bdist_wheel':
+        ptype = 'binary'
+    elif release.packagetype == 'bdist_wininst':
+        ptype = 'binary'
+    elif release.packagetype == 'bdist_egg':
+        ptype = 'binary'
+    elif release.packagetype == 'bdist_dumb':
+        ptype = 'binary'
+    elif release.packagetype == 'bdist_rpm':
+        ptype = 'binary'
     else:
-        raise NotImplementedError('Unknown')
+        logger.critical('Could not determine package type for {}: {}'.
+                        format(release.filename, release.packagetype))
+        raise NotImplementedError(release.filename, release.packagetype)
 
-    python_version = 'py{}'.format(sys.version_info.major)
-
-    for release in result:
-        if python_version in release.python_version:
-            return release
-
-    raise NotImplementedError('Unable to find release for {} in {}'.format(python_version, result))
+    logger.debug('Determine package type for {}: {}'.format(release.filename, ptype))
+    return ptype
 
 
 
-def empty_venv_packages():
-    logger.info('Determining preinstalled packages in a virtualenv')
-    with tmpvenv() as (shell, venvdir, pip):
-        frozen = freeze([])
-        pkgs = set([p.name for p in frozen])
-        return pkgs
+
+def identify_release_platform(release):
+    "Returns the appropriate OS platform (unix, linux, mac, win, any, unknown) from a pypi resonse"
+
+    logger.debug('Looking up platform for %s', release.filename)
+
+    def check_pkg(pkgs):
+        return any([release.packagetype == pkg for pkg in pkgs.split()])
+
+    def check_ext(patterns):
+
+        if isinstance(patterns, str):
+            patterns = patterns.split()
+        elif isinstance(patterns, list):
+            patterns = patterns
+        else:
+            raise NotImplementedError(patterns)
+
+        logger.debug('Checking %s against %s', release.filename, patterns)
+        result = [re.search(pat, str(release.filename)) for pat in patterns]
+        logger.debug('Matched: %s', result)
+        return any(result)
+
+    if check_ext(r'.+-any\.whl'):
+        result = 'any'
+
+    elif check_ext(r'.+\.rpm .+linux[a-z_0-9-]+\.(whl|egg|tar\.gz)'):
+        result = 'linux'
+
+    elif check_ext(r'.+\.exe .+-win(32|_amd64)\.whl'):
+        result = 'win'
+
+    elif check_ext(r'.+macosx-?[a-z_0-9]+\.(whl|egg)'):
+        result = 'mac'
+
+    elif check_pkg('sdist'):
+        result = 'any'
+
+    elif check_pkg('bdist_wheel') and is_universal_wheel(release.filename):
+        result = 'unknown'
+
+    elif check_pkg('bdist_wininst'):
+        result = 'win'
+
+    elif check_pkg('bdist_rpm'):
+        result = 'linux'
+
+    elif check_pkg('bdist_egg'):
+        result = 'unknown'
+
+    elif is_archive(release.filename):
+        result = 'any'
+
+    else:
+        logger.critical('Cannot handle %s as %s', release.filename, release.packagetype)
+        raise NotImplementedError(release.filename, release.packagetype)
+
+    logger.debug('Platform is %s', result)
+    return result
+
+
+def get_package(package):
+    url = 'https://pypi.python.org/pypi/{}/json'.format(package)
+    logger.debug('Querying PyPi for %s', package)
+
+    response = requests.get(url)
+
+    if not response.status_code == 200:
+        logger.critical('GET %s failed with %s', url, response.status_code)
+        raise NotImplementedError((url, response))
+
+    return munchify(json.loads(response.content))
+
+
+
+PyPiResponse = Munch
+
+
+class Release(HasTraits):
+
+    upload_time = Str
+    comment_text = Str
+    python_version = Str
+    url = Str
+    md5 = Str
+    sha256 = Str(minlength=64, maxlength=64)  # 64 is the length of the sha256 hexdigest
+    kind = Enum('source', 'universal', 'binary')
+    packagetype = Enum('sdist', 'bdist_egg', 'bdist_rpm', 'bdist_wheel', 'bdist_wininst')
+    filename = Str
+    platform = Enum('unix', 'linux', 'mac', 'win', 'any', 'unknown')
+    downloads = Int
+    size = Int
+
+    @classmethod
+    def from_pypi(cls, pypi_data):
+        "Convert a `munchify`-ed response from PyPi"
+
+        resp = requests.get(pypi_data.url)
+        sha256 = hashlib.sha256(resp.content).hexdigest()
+
+        return cls(
+            upload_time = pypi_data.upload_time,
+            comment_text = pypi_data.comment_text,
+            python_version = pypi_data.python_version,
+            url = pypi_data.url,
+            md5 = pypi_data.md5_digest,
+            sha256 = sha256,
+            kind = identify_release_kind(pypi_data),
+            packagetype = pypi_data.packagetype,
+            filename = pypi_data.filename,
+            platform = identify_release_platform(pypi_data),
+            downloads = pypi_data.downloads,
+            size = pypi_data.size,
+        )
 
 
 class Package(HasTraits):
 
-    name = Str
-    version = Str
-    dependencies = Set(This)
-    preinstalled = Set(Str)
-    buildInputs = Set(Str)
-    doCheck = Bool(True)
-    sha256 = Str(minlength=64, maxlength=64)  # 64 is the length of the sha256 hexdigest
+    pypi = Trait(PyPiResponse)
+    releases = Dict(Str, Dict(Str, Release))  # version str -> package_type -> Release
+    pinned = Trait(Release)
 
-    def __eq__(self, other):
-        return \
-            self.name == other.name and\
-            self.version == other.version
+    @classmethod
+    def from_pypi(cls, name):
+        pypi = get_package(name)
 
-    def __str__(self):
-        return '{}=={}'.format(self.name, self.version)
+        all_releases = defaultdict(dict)
+        for version, releases in pypi.releases.items():
+            for release in releases:
+                rel = Release.from_pypi(release)
+                all_releases[version][rel.packagetype] = rel
 
-    @property
-    def frozen_name(self):
-        return str(self)
+        return cls(pypi=pypi, releases=all_releases)
 
-    def find_requirements(self):
-        logger.info('Finding requirements for %s', self)
-
-        frozen = freeze([self.frozen_name],
-                        preinstalled=self.preinstalled,
-                        extraPackages=self.buildInputs)
-
-        for entry in frozen:
-            if entry.name == self.name:
-                continue
-
-            pkg = Package(name=entry.name, version=entry.version,
-                          preinstalled=self.preinstalled,
-                          buildInputs=self.buildInputs)
-
-            self.dependencies.add(pkg)
-
-
-    def prune_dependencies(self):
-        logger.info('Prunning dependencies for %s', self)
-
-        dep_names = set([dep.name for dep in self.dependencies])  # :: {str}
-        to_prune  = set()                                         # :: {str}
-
-        logger.debug('%s children: %s', self.name, ' '.join(dep_names))
-
-        for child in self.dependencies:
-            child.find_requirements()
-            logger.debug('%s grandchildren: %s', self.name, 
-                        ' '.join(map(lambda p: p.name, child.dependencies)))
-
-            for grandchild in child.dependencies:
-                if grandchild.name in dep_names:
-                    to_prune.add(grandchild.name)
-
-        logger.debug('Prunning for %s: %s', self, ' '.join(to_prune))
-        pruned = filter(lambda dep: dep.name not in to_prune, self.dependencies)
-        self.dependencies = set(pruned)
-
-
-
-def freeze(packages, preinstalled=None, extraPackages=None):
-    preinstalled = preinstalled or set()
-
-    logger.debug('Freezing packages: %s', ', '.join(packages))
-    with tmpvenv(extraPackages=extraPackages) as (shell, venvdir, pip):
-        if packages:
-            shell([pip, 'install'] + map(quote, packages))
-
-        frozen = shell([pip, 'list', '--format', 'json'])
-        frozen_json = json.loads(frozen.strip())
-        munched = filter(
-            lambda pkg: pkg.name not in preinstalled,
-            munchify(frozen_json))
-        return munched
-
-
-def build_graph(open_packages, extraPackages=None):
-
-    preinstalled = empty_venv_packages()
-    logger.info('Preinstalled packages: %s', ', '.join(preinstalled))
-
-    frozen = freeze(open_packages, preinstalled=preinstalled)
-
-    packages = [Package(name=p.name, version=p.version,
-                        preinstalled=preinstalled, buildInputs=extraPackages)
-                for p in frozen]
-    logger.info('Processing %s', ' '.join(map(str, packages)))
-
-    for pkg in packages:
-        pkg.find_requirements()
-
-    for pkg in packages:
-        pkg.prune_dependencies()
-
-
-    G = nx.DiGraph()
-    for pkg in packages:
-        G.add_node(pkg.name)
-
-        for dep in pkg.dependencies:
-            G.add_edge(pkg.name, dep.name)
-
-    dotfile = '/tmp/test.dot'
-    graphviz_type = 'pdf'
-    nx.nx_agraph.write_dot(G, dotfile)
-    cmd = ['dot', '-Grankdir=LR', '-T%s' % graphviz_type, dotfile]
-    data = check_output(cmd)
-    with open('/tmp/test.%s' % graphviz_type, 'wb') as fd:
-        fd.write(data)
+    def pin(self, version, type='universal'):
+        pass
 
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level='INFO')
-    # build_graph(['azure'])
-    # build_graph(['shade'], extraPackages=set(['openssl']))
-    build_graph(['cloudmesh_client'], extraPackages=set(['openssl libffi']))
+    logging.basicConfig(level='DEBUG')
+    print Package.from_pypi('shade')
