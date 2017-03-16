@@ -1,0 +1,6 @@
+fetchPypi {{
+  pname = "{name}";
+  version = "{version}";
+  sha256 = "{sha256}";
+  format = "{format}";
+}}

@@ -1,0 +1,8 @@
+buildPythonPackage {{
+  name = "{name}-{version}";
+  src = {fetcher};
+  format = "{format}";
+  buildInputs = [ {buildInputs} ];
+  propagatedBuildInputs = [ {pythonDependencies} ];
+  doCheck = {doCheck};
+}}
