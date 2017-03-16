@@ -108,61 +108,6 @@ def empty_venv_packages():
         return pkgs
 
 
-class FrozenRequirementsSet(object):
-
-    _reqs = Set()
-    _preinstalled = Set()
-
-    def __init__(self, frozen_set, preinstalled=None):
-
-        self._reqs = dict([req.name])
-        self._preinstalled = preinstalled or set()
-
-        logger.info('Loading requirements from %s', requirements_file)
-        with open(requirements_file) as fd:
-            reqs = map(lambda s: s.strip().split('=='), fd)
-            reqs = [{'name': n, 'version': v} for n, v in reqs]
-            reqs = map(dotdict, reqs)
-            for req in reqs:
-                if req.name in self.preinstalled:
-                    continue
-                entry = PackageEntry.from_pip_list_json(req)
-                entry.requirements = self
-                self._reqs[entry.name] = entry
-                logger.info('Requires: %s', entry)
-
-
-
-    def __iter__(self):
-        for k in sorted(self._reqs):
-            yield self._reqs[k]
-
-    def __getitem__(self, name):
-        return self._reqs[name]
-
-    def names(self):
-        return sorted(self._reqs.iterkeys())
-
-    def verify_dependencies(self):
-        logger.info('Verifying dependencies')
-        for entry in self:
-            entry.pip_download()
-
-    def build(self):
-        logger.info('Building')
-        with tmp_venv(python=self.python) as (venv, pip), tempdir() as cache:
-            for entry in self:
-                entry.download(preinstalled=self.preinstalled, cache=cache)
-                entry.install(preinstalled=self.preinstalled, venv=venv, cache=cache)
-
-    def graph(self):
-        logger.info('Building networkx graph')
-        G = nx.DiGraph()
-        for entry in self:
-            entry.graph(G)
-        return G
-
-
 class Package(HasTraits):
 
     name = Str
