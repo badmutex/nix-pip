@@ -119,8 +119,8 @@ if __name__ == '__main__':
                             doCheck = False)
                     for p in packages.values()]
 
-    for p in nix_packages:
-        print(p.mkDerivation())
+    reqs = mkPackageSet(nix_packages)
+    print(reqs)
 
 
 @click.command()
