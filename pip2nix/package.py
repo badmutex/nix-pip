@@ -111,6 +111,9 @@ class Graph(HasTraits):
 
     digraph = Trait(nx.DiGraph)
 
+    def __getattr__(self, name):
+        return getattr(self.digraph, name)
+
     @classmethod
     def from_names(cls, names, extraPackages=None):
         logger.info('Building dependency graph for %s', ' '.join(names))
