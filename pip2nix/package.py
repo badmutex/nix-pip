@@ -4,10 +4,13 @@ import hashlib
 import json
 import logging
 from pipes import quote
+from subprocess import check_output
 
 from munch import munchify
 import networkx as nx
-from traits.api import HasTraits, Str, Set, This, Bool
+from traits.api import HasTraits, Trait, Str, Set, This, Bool
+
+from pip2nix.util import tmpvenv
 
 
 logger = logging.getLogger(__name__)
@@ -104,46 +107,59 @@ def freeze(packages, preinstalled=None, extraPackages=None):
         return munched
 
 
-def build_graph(open_packages, extraPackages=None):
+class Graph(HasTraits):
 
-    extraPackages = extraPackages or set()
-    preinstalled = empty_venv_packages()
-    logger.info('Preinstalled packages: %s', ', '.join(preinstalled))
+    digraph = Trait(nx.DiGraph)
 
-    frozen = freeze(open_packages, preinstalled=preinstalled)
+    @classmethod
+    def from_names(cls, names, extraPackages=None):
+        logger.info('Building dependency graph for %s', ' '.join(names))
 
-    packages = [Package(name=p.name, version=p.version,
-                        preinstalled=preinstalled, buildInputs=extraPackages)
-                for p in frozen]
-    logger.info('Processing %s', ' '.join(map(str, packages)))
+        extraPackages = extraPackages or set()
+        preinstalled = empty_venv_packages()
+        logger.info('Preinstalled packages: %s', ', '.join(preinstalled))
 
-    for pkg in packages:
-        pkg.find_requirements()
+        frozen = freeze(names, preinstalled=preinstalled)
 
-    for pkg in packages:
-        pkg.prune_dependencies()
+        packages = [Package(name=p.name, version=p.version,
+                            preinstalled=preinstalled, buildInputs=extraPackages)
+                    for p in frozen]
+        logger.info('Processing %s', ' '.join(map(str, packages)))
 
+        for pkg in packages:
+            pkg.find_requirements()
 
-    G = nx.DiGraph()
-    for pkg in packages:
-        G.add_node(pkg)
+        for pkg in packages:
+            pkg.prune_dependencies()
 
-        for dep in pkg.dependencies:
-            G.add_edge(pkg, dep)
+        G = nx.DiGraph()
+        for pkg in packages:
+            G.add_node(pkg)
 
-    dotfile = '/tmp/test.dot'
-    graphviz_type = 'pdf'
-    nx.nx_agraph.write_dot(G, dotfile)
-    cmd = ['dot', '-Grankdir=LR', '-T%s' % graphviz_type, dotfile]
-    data = check_output(cmd)
-    with open('/tmp/test.%s' % graphviz_type, 'wb') as fd:
-        fd.write(data)
+            for dep in pkg.dependencies:
+                G.add_edge(pkg, dep)
+
+        return cls(digraph=G)
+
+    def graphviz(self, outprefix='requirements', type='pdf'):
+        logger.info('Creating graphviz depiction')
+
+        dotfile = outprefix + '.dot'
+        outfile = outprefix + '.' + type
+
+        nx.nx_agraph.write_dot(self.digraph, dotfile)
+        cmd = ['dot', '-Grankdir=LR', '-T%s' % type, dotfile]
+        data = check_output(cmd)
+        with open(outfile, 'wb') as fd:
+            fd.write(data)
 
 
 
 if __name__ == '__main__':
     logging.basicConfig(level='INFO')
-    build_graph(['bucket-list'])
+    G = Graph.from_names(['bucket-list'])
     # build_graph(['azure'])
     # build_graph(['shade'], extraPackages=set(['openssl']))
     # build_graph(['cloudmesh_client'], extraPackages=set(['openssl libffi']))
+
+    G.graphviz(outprefix='/tmp/test')
