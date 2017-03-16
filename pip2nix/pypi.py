@@ -169,6 +169,7 @@ class Package(HasTraits):
     version = Str
     dependencies = Set(This)
     preinstalled = Set(Str)
+    buildInputs = Set(Str)
     sha256 = Str(minlength=64, maxlength=64)  # 64 is the length of the sha256 hexdigest
 
     def __eq__(self, other):
@@ -186,14 +187,17 @@ class Package(HasTraits):
     def find_requirements(self):
         logger.info('Finding requirements for %s', self)
 
-        frozen = freeze([self.frozen_name], preinstalled=self.preinstalled)
+        frozen = freeze([self.frozen_name],
+                        preinstalled=self.preinstalled,
+                        extraPackages=self.buildInputs)
 
         for entry in frozen:
             if entry.name == self.name:
                 continue
 
             pkg = Package(name=entry.name, version=entry.version,
-                          preinstalled=self.preinstalled)
+                          preinstalled=self.preinstalled,
+                          buildInputs=self.buildInputs)
 
             self.dependencies.add(pkg)
 
@@ -242,9 +246,10 @@ def build_graph(open_packages, extraPackages=None):
     preinstalled = empty_venv_packages()
     logger.info('Preinstalled packages: %s', ', '.join(preinstalled))
 
-    frozen = freeze(open_packages, preinstalled=preinstalled, extraPackages=extraPackages)
+    frozen = freeze(open_packages, preinstalled=preinstalled)
 
-    packages = [Package(name=p.name, version=p.version, preinstalled=preinstalled)
+    packages = [Package(name=p.name, version=p.version,
+                        preinstalled=preinstalled, buildInputs=extraPackages)
                 for p in frozen]
     logger.info('Processing %s', ' '.join(map(str, packages)))
 
@@ -275,5 +280,5 @@ def build_graph(open_packages, extraPackages=None):
 if __name__ == '__main__':
     logging.basicConfig(level='INFO')
     # build_graph(['azure'])
-    # build_graph(['shade'], extraPackages=['openssl'])
-    build_graph(['cloudmesh_client'], extraPackages=['openssl libffi'])
+    # build_graph(['shade'], extraPackages=set(['openssl']))
+    build_graph(['cloudmesh_client'], extraPackages=set(['openssl libffi']))
