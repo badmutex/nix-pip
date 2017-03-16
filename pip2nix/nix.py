@@ -23,11 +23,6 @@ fetchurl_tmpl = pkg_resources.resource_string(
     'data/fetchurl.nix.template'
 )
 
-fetchPypi_tmpl = pkg_resources.resource_string(
-    __name__,
-    'data/fetchPypi.nix.template'
-)
-
 mkDerivation_tmpl = pkg_resources.resource_string(
     __name__,
     'data/mkDerivation.nix.template'
@@ -52,16 +47,6 @@ def fetchurl(url, sha256):
         url = url,
         sha256 = sha256,
     )
-
-
-def fetchPypi(name, version, sha256):
-    return fetchPypi_tmpl.format(
-        name = name,
-        version = version,
-        sha256 = sha256,
-    )
-
-
 
 
 def mkPackageSet(requirements):

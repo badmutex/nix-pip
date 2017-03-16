@@ -1,7 +1,6 @@
 {{ pkgs
 , buildPythonPackage
 , fetchurl
-, fetchPypi
 , extras ? []
 , ...
 }}:
