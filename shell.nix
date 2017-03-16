@@ -23,6 +23,7 @@ let
   myPythonPackages = pythonPackages // (with pythonPackages; {
     python-novaclient = novaclient;
     python-keystoneclient = keystoneclient;
+    pygraphviz = pygraphviz.override (super: {doCheck = false;});
   });
 
   readRequirements = file:
