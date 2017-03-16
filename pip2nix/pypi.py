@@ -1,7 +1,7 @@
 
 from munch import Munch, munchify
 import requests
-from traits.api import HasTraits, Trait, File, Enum, Str, Dict, Int
+from traits.api import HasTraits, Trait, File, Enum, Str, Dict, Int, List
 
 import hashlib
 import json
@@ -181,26 +181,40 @@ class Release(HasTraits):
 class Package(HasTraits):
 
     pypi = Trait(PyPiResponse)
-    releases = Dict(Str, Dict(Str, Release))  # version str -> package_type -> Release
+    releases = Dict(Str, Dict(Str, List(Release)))  # version str -> kind -> [Release]
     pinned = Trait(Release)
 
     @classmethod
     def from_pypi(cls, name):
         pypi = get_package(name)
 
-        all_releases = defaultdict(dict)
+        all_releases = defaultdict(lambda: defaultdict(list))
         for version, releases in pypi.releases.items():
             for release in releases:
                 rel = Release.from_pypi(release)
-                all_releases[version][rel.packagetype] = rel
+                all_releases[version][rel.kind].append(rel)
 
         return cls(pypi=pypi, releases=all_releases)
 
-    def pin(self, version, type='universal'):
-        pass
+    def pin(self, version):
+        releases = self.releases[version]
+
+        prefered_kinds = ['universal', 'source']
+        for k in prefered_kinds:
+            if k in releases:
+                kind_releases = releases[k]
+                r = kind_releases[0]
+                logger.debug('Pinned %s (%s, %s)', r.kind, r.filename, r.packagetype)
+                self.pinned = r
+                return
+
+        import pdb; pdb.set_trace()
+        raise Exception('Unable to pin')
 
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level='DEBUG')
-    print Package.from_pypi('shade')
+    logging.basicConfig(level='INFO')
+    logging.getLogger('requests').setLevel('WARNING')
+    p = Package.from_pypi('bucket-list')
+    p.pin('0.3.8')
