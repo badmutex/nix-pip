@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+declare -r name="$1"
+declare -r requirements="$2.open"
+declare -r locked="${requirements%%.open}.lock"
+
+declare -r ME="$0"
+declare -r PYTHON_BARE_NIX=$(dirname $(dirname $(readlink -f "$ME")))/pip2nix/data/python-bare.nix
+
+tempdir=$(mktemp -d)
+trap "rm -rf $tempdir" EXIT
+
+VENVDIR="${VENVDIR:=$tempdir/venv}"
+PYTHON=${PYTHON_BARE:=python}
+PIP=$VENVDIR/bin/pip
+
+
+rm -rf "$VENVDIR"               # cleanup sanity check
+
+nix-shell "$PYTHON_BARE_NIX" \
+          --pure \
+          --command "virtualenv '$VENVDIR'"
+$PIP install -r "$requirements"
+$PIP freeze >"$locked"
