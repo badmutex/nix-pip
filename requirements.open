@@ -4,3 +4,4 @@ munch
 requests
 networkx
 pygraphviz
+click
