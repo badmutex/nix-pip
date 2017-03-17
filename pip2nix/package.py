@@ -8,7 +8,7 @@ from subprocess import check_output
 
 from munch import munchify
 import networkx as nx
-from traits.api import HasTraits, Trait, Str, Set, This, Bool
+from traits.api import HasTraits, Trait, Dict, List, Str, Set, This
 
 from pip2nix.util import tmpvenv
 
@@ -70,7 +70,7 @@ class Package(HasTraits):
     version = Str
     dependencies = Set(This)
     preinstalled = Set(Str)
-    buildInputs = Set(Str)
+    buildInputs = Dict(Str, List)
 
     def __eq__(self, other):
         return \
@@ -108,7 +108,7 @@ class Package(HasTraits):
 
         frozen = freeze([self.frozen_name],
                         preinstalled=self.preinstalled,
-                        extraPackages=self.buildInputs)
+                        buildInputs=self.buildInputs.get(self.name))
 
         for entry in frozen:
             if entry.name == self.name:
@@ -153,11 +153,11 @@ class Package(HasTraits):
 
 
 
-def freeze(packages, preinstalled=None, extraPackages=None):
+def freeze(packages, preinstalled=None, buildInputs=None):
     preinstalled = preinstalled or set()
 
     logger.debug('Freezing packages: %s', ', '.join(packages))
-    with tmpvenv(extraPackages=extraPackages) as (shell, venvdir, pip):
+    with tmpvenv(buildInputs=buildInputs) as (shell, venvdir, pip):
         if packages:
             shell([pip, 'install'] + map(quote, packages))
 
@@ -177,17 +177,17 @@ class Graph(HasTraits):
         return getattr(self.digraph, name)
 
     @classmethod
-    def from_names(cls, names, extraPackages=None):
+    def from_names(cls, names, buildInputs=None):
         logger.info('Building dependency graph for %s', ' '.join(names))
 
-        extraPackages = extraPackages or set()
+        buildInputs = buildInputs or dict()
         preinstalled = empty_venv_packages()
         logger.info('Preinstalled packages: %s', ', '.join(preinstalled))
 
         frozen = freeze(names, preinstalled=preinstalled)
 
         packages = [Package(name=p.name, version=p.version,
-                            preinstalled=preinstalled, buildInputs=extraPackages)
+                            preinstalled=preinstalled, buildInputs=buildInputs)
                     for p in frozen]
         logger.info('Processing %s', ' '.join(map(str, packages)))
 
@@ -235,7 +235,7 @@ if __name__ == '__main__':
     logging.basicConfig(level='INFO')
     G = Graph.from_names(['bucket-list'])
     # build_graph(['azure'])
-    # build_graph(['shade'], extraPackages=set(['openssl']))
-    # build_graph(['cloudmesh_client'], extraPackages=set(['openssl libffi']))
+    # build_graph(['shade'], buildInputs=set(['openssl']))
+    # build_graph(['cloudmesh_client'], buildInputs=set(['openssl libffi']))
 
     G.graphviz(outprefix='/tmp/test')

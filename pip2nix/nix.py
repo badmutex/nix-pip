@@ -70,6 +70,10 @@ class Package(HasTraits):
     pypi = Trait(pypi.Package)
     doCheck = Bool(True)
 
+    @property
+    def name(self):
+        return self.package.name
+
     def mkDerivation(self):
         logger.info('mkDerivation for %s', self.package)
 
@@ -91,25 +95,51 @@ class Package(HasTraits):
             fetcher = indent(fetcher),
             format = format,
             pythonDependencies = ' '.join(map(lambda pkg: pkg.name, self.package.dependencies)),
-            buildInputs = ' '.join(self.package.buildInputs),
+            buildInputs = ' '.join(self.package.buildInputs.get(self.name, [])),
             doCheck = 'true' if self.doCheck else 'false',
         )
 
         return drv
 
 
-if __name__ == '__main__':
+
+
+def user_package_additions(inputs):
+    """Process the user-specified package-specific build inputs
+
+    The inputs are in the form:
+    ("python package name", "other_name1,other_name2,other_name_etc")
+
+    :rtype: :class:`dict` from package name -> [other name]
+    """
+
+    ret = dict()
+    for pkg, deps in inputs:
+        names = str(deps).split(',')
+        names = map(str.strip, names)
+        ret[str(pkg)] = names
+
+    return ret
+
+
+@click.command()
+@click.argument('pkgs', nargs=-1)
+@click.option('-i', '--build-inputs', nargs=2, multiple=True)
+@click.option('-s', '--setup-requires', nargs=2, multiple=True)
+@click.option('-o', '--out-file', default='requirements.nix')
+def main(pkgs, build_inputs, setup_requires, out_file):
+
+    pkgs = map(str, pkgs)
+    buildInputs = user_package_additions(build_inputs)
+    setupRequires = user_package_additions(setup_requires)
+
     import coloredlogs
     coloredlogs.install()
 
     logging.basicConfig(level='DEBUG')
     logging.getLogger('requests').setLevel('WARNING')
 
-    # G = package.Graph.from_names(['bucket-list'])
-    # G = package.Graph.from_names(['cloudmesh_client'], extraPackages=set(['openssl', 'libffi']))
-    # G = package.Graph.from_names(['pbr'], extraPackages=set(['openssl', 'libffi']))
-    # G = package.Graph.from_names(['functools32'])
-    G = package.Graph.from_names(['shade'])
+    G = package.Graph.from_names(pkgs, buildInputs=buildInputs)
 
 
     packages = dict([(p.name, p) for p in G.nodes()])
@@ -129,50 +159,9 @@ if __name__ == '__main__':
                             doCheck = False)
                     for p in packages.values()]
 
+
     reqs = mkPackageSet(nix_packages)
     print(reqs)
 
-
-@click.command()
-@click.argument('path', type=click.Path(exists=True))
-@click.option('--gv/--no-gv', default=True)
-@click.option('-T', '--graphviz-type', default='pdf')
-@click.option('-d', '--dot', type=click.Path())
-@click.option('-o', '--out', type=click.Path())
-@click.option('-r', '--reqnix', type=click.File('w'), default='requirements.nix')
-def main(path, gv, graphviz_type, dot, out, reqnix):
-
-    logging.basicConfig(
-        level='INFO',
-        format='%(levelname)-9s %(name)-8s %(message)s '
-    )
-    logging.getLogger('requests').setLevel('WARNING')
-
-    try:
-        reqs = pypi.RequirementsSet(path)
-        reqs.verify_dependencies()
-        reqs.build()
-        G = reqs.graph()
-
-        expr = mkPackageSet(reqs)
-        print(expr)
-        reqnix.write(expr)
-
-        if gv:
-            dotfile = dot or path + '.dot'
-            logger.info('Writing %s', dotfile)
-            nx.nx_agraph.write_dot(G, dotfile)
-
-            outfile = out or path + '.' + graphviz_type
-            cmd = ['dot', '-Grankdir=LR', '-T%s' % graphviz_type, dotfile]
-            logger.debug('Running cmd %s', ' '.join(cmd))
-            data = check_output(cmd)
-
-            logger.info('Writing %s', outfile)
-            with open(outfile, 'wb') as fd:
-                fd.write(data)
-
-    except CalledProcessError, e:
-        print(e.cmd)
-        print(e.returncode)
-        print(e.output)
+    with open(out_file, 'w') as fd:
+        fd.write(reqs)
