@@ -1,4 +1,4 @@
-from traits.api import HasTraits, Trait, Dict, List, Str, Bool
+from traits.api import HasTraits, Trait, List, Str, Bool
 
 from pip2nix import pypi, package
 
@@ -69,7 +69,7 @@ class Package(HasTraits):
     package = Trait(package.Package)
     pypi = Trait(pypi.Package)
     doCheck = Bool(True)
-    setupRequires = Dict(Str, List(Str))
+    setupRequires = List(Str)
 
     @property
     def name(self):
