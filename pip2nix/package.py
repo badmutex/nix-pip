@@ -16,7 +16,24 @@ from pip2nix.util import tmpvenv
 logger = logging.getLogger(__name__)
 
 
-
+# Some have odd version strings which are consistently inconsistently
+# reported by pip and pypi.
+#
+# Notable example is functools32:
+#
+# - pip freeze reports version as 3.2.3.post2
+# - pypi reports version as 3.2.3-2
+# - git repository reports tag consistently with pypi (3.2.3-2)
+# - one can install functools32 as functools32==3.2.3-2 OR functools32==3.2.3.post2
+#
+# Since we depend on pypi reporting for later pinning we apply the
+# following transformations to the versions reported by pip list/freeze.
+#
+# - the key is the string in the reported version
+# - the value is the replacement
+VERSION_TRANSFORMS = {
+    '.post': '-'
+}
 
 
 def empty_venv_packages():
@@ -49,6 +66,21 @@ class Package(HasTraits):
     @property
     def frozen_name(self):
         return str(self)
+
+    def apply_version_transformations(self, transformations=None):
+        tx = transformations or VERSION_TRANSFORMS
+        logger.info('%s applying version transformations %s',
+                    self, tx)
+
+        ver = self.version
+        for old, new in tx.items():
+            ver = ver.replace(old, new)
+
+        logger.debug('%s updating version to %s', self.name, ver)
+        self.version = ver
+
+        for dep in self.dependencies:
+            dep.apply_version_transformations(transformations=tx)
 
     def find_requirements(self):
         logger.info('Finding requirements for %s', self)
@@ -134,6 +166,9 @@ class Graph(HasTraits):
 
         for pkg in packages:
             pkg.prune_dependencies()
+
+        for pkg in packages:
+            pkg.apply_version_transformations()
 
         G = nx.DiGraph()
         for pkg in packages:
