@@ -42,15 +42,7 @@ def identify_release_kind(release):
         ptype = 'source'
     elif release.packagetype == 'bdist_wheel' and is_universal_wheel(release.filename):
         ptype = 'universal'
-    elif release.packagetype == 'bdist_wheel':
-        ptype = 'binary'
-    elif release.packagetype == 'bdist_wininst':
-        ptype = 'binary'
-    elif release.packagetype == 'bdist_egg':
-        ptype = 'binary'
-    elif release.packagetype == 'bdist_dumb':
-        ptype = 'binary'
-    elif release.packagetype == 'bdist_rpm':
+    elif release.packagetype.startswith('bdist_'):
         ptype = 'binary'
     else:
         logger.critical('Could not determine package type for {}: {}'.
@@ -103,13 +95,16 @@ def identify_release_platform(release):
     elif check_pkg('bdist_wheel') and is_universal_wheel(release.filename):
         result = 'unknown'
 
-    elif check_pkg('bdist_wininst'):
+    elif check_pkg('bdist_wininst') or check_pkg('bdist_msi'):
         result = 'win'
 
     elif check_pkg('bdist_rpm'):
         result = 'linux'
 
     elif check_pkg('bdist_egg'):
+        result = 'unknown'
+
+    elif check_pkg('bdist_dumb'):
         result = 'unknown'
 
     elif is_archive(release.filename):
@@ -149,7 +144,7 @@ class Release(HasTraits):
     md5 = Str
     sha256 = Str(minlength=64, maxlength=64)  # 64 is the length of the sha256 hexdigest
     kind = Enum('source', 'universal', 'binary')
-    packagetype = Enum('sdist', 'bdist_egg', 'bdist_rpm', 'bdist_wheel', 'bdist_wininst')
+    packagetype = Enum('sdist', 'bdist_dumb', 'bdist_egg', 'bdist_rpm', 'bdist_wheel', 'bdist_wininst', 'bdist_msi')
     filename = Str
     platform = Enum('unix', 'linux', 'mac', 'win', 'any', 'unknown')
     downloads = Int
