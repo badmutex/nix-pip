@@ -36,6 +36,24 @@ VERSION_TRANSFORMS = {
 }
 
 
+CACHE = dict()                  # package name -> package
+
+
+def is_cached(pkg):
+    global CACHE
+    return pkg.name in CACHE
+
+
+def cache(pkg):
+    assert not is_cached(pkg)
+    global CACHE
+    CACHE[pkg.name] = pkg
+
+
+def clear_cache():
+    global CACHE
+    CACHE.clear()
+
 def empty_venv_packages():
     logger.info('Determining preinstalled packages in a virtualenv')
     with tmpvenv() as (shell, venvdir, pip):
@@ -84,6 +102,10 @@ class Package(HasTraits):
     def find_requirements(self):
         logger.info('Finding requirements for %s', self)
 
+        if is_cached(self):
+            logger.debug('Using cached %s', self)
+            return
+
         frozen = freeze([self.frozen_name],
                         preinstalled=self.preinstalled,
                         extraPackages=self.buildInputs)
@@ -108,9 +130,18 @@ class Package(HasTraits):
         logger.debug('%s children: %s', self.name, ' '.join(dep_names))
 
         for child in self.dependencies:
-            child.find_requirements()
-            logger.debug('%s grandchildren: %s', self.name, 
-                        ' '.join(map(lambda p: p.name, child.dependencies)))
+
+            if not is_cached(child):
+
+                child.find_requirements()
+                logger.debug('%s grandchildren: %s', self.name, 
+                            ' '.join(map(lambda p: p.name, child.dependencies)))
+
+                cache(child)
+
+            else:
+
+                logger.debug('Using cached %s', child)
 
             for grandchild in child.dependencies:
                 if grandchild.name in dep_names:
@@ -162,6 +193,8 @@ class Graph(HasTraits):
 
         for pkg in packages:
             pkg.find_requirements()
+
+        clear_cache()
 
         for pkg in packages:
             pkg.prune_dependencies()
