@@ -112,7 +112,7 @@ if __name__ == '__main__':
     )
 
     for pkg in G.nodes():
-        pypi_packages[pkg.name].pin(version=pkg.version)
+        pypi_packages[pkg.name].pin(pkg.version)
 
     nix_packages = [Package(package = packages[p.name],
                             pypi = pypi_packages[p.name],
