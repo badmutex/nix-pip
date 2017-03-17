@@ -155,16 +155,12 @@ class Release(HasTraits):
     def from_pypi(cls, pypi_data):
         "Convert a `munchify`-ed response from PyPi"
 
-        resp = requests.get(pypi_data.url)
-        sha256 = hashlib.sha256(resp.content).hexdigest()
-
         return cls(
             upload_time = pypi_data.upload_time,
             comment_text = pypi_data.comment_text,
             python_version = pypi_data.python_version,
             url = pypi_data.url,
             md5 = pypi_data.md5_digest,
-            sha256 = sha256,
             kind = identify_release_kind(pypi_data),
             packagetype = pypi_data.packagetype,
             filename = pypi_data.filename,
@@ -172,6 +168,11 @@ class Release(HasTraits):
             downloads = pypi_data.downloads,
             size = pypi_data.size,
         )
+
+    def pin(self, session=None):
+        query = session or requests
+        response = query.get(self.url)
+        self.sha256 = hashlib.sha256(response.content).hexdigest()
 
 
 class Package(HasTraits):
@@ -191,7 +192,7 @@ class Package(HasTraits):
                 rel = Release.from_pypi(release)
                 all_releases[version][rel.kind].append(rel)
 
-        return cls(pypi=pypi, releases=all_releases)
+        return cls(pypi=pypi, releases=all_releases, session=session)
 
     def pin(self, version):
         releases = self.releases[version]
@@ -202,6 +203,7 @@ class Package(HasTraits):
                 kind_releases = releases[k]
                 r = kind_releases[0]
                 logger.debug('Pinned %s (%s, %s)', r.kind, r.filename, r.packagetype)
+                r.pin(session=self.session)
                 self.pinned = r
                 return
 
