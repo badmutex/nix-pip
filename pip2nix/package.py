@@ -53,7 +53,6 @@ class Package(HasTraits):
     dependencies = Set(This)
     preinstalled = Set(Str)
     buildInputs = Set(Str)
-    doCheck = Bool(True)
 
     def __eq__(self, other):
         return \
