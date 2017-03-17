@@ -70,7 +70,7 @@ class Package(HasTraits):
     version = Str
     dependencies = Set(This)
     preinstalled = Set(Str)
-    buildInputs = Dict(Str, List)
+    buildInputs = Dict(Str, List(Str))
 
     def __eq__(self, other):
         return \
