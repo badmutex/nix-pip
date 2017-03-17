@@ -114,9 +114,12 @@ if __name__ == '__main__':
         [(p.name, pypi.Package.from_pypi(p.name)) for p in packages.values()]
     )
 
+    logger.info('Pinning packages')
     for pkg in G.nodes():
+        logger.debug('Pinning %s to %s', pkg.name, pkg.version)
         pypi_packages[pkg.name].pin(pkg.version)
 
+    logger.info('Creating Nix derivations')
     nix_packages = [Package(package = packages[p.name],
                             pypi = pypi_packages[p.name],
                             doCheck = False)

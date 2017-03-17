@@ -120,7 +120,7 @@ def identify_release_platform(release):
 
 def get_package(package):
     url = 'https://pypi.python.org/pypi/{}/json'.format(package)
-    logger.debug('Querying PyPi for %s', package)
+    logger.info('Querying PyPi for %s', package)
 
     response = requests.get(url)
 
