@@ -105,10 +105,11 @@ if __name__ == '__main__':
     logging.basicConfig(level='DEBUG')
     logging.getLogger('requests').setLevel('WARNING')
 
-    G = package.Graph.from_names(['bucket-list'])
+    # G = package.Graph.from_names(['bucket-list'])
     # G = package.Graph.from_names(['cloudmesh_client'], extraPackages=set(['openssl', 'libffi']))
     # G = package.Graph.from_names(['pbr'], extraPackages=set(['openssl', 'libffi']))
     # G = package.Graph.from_names(['functools32'])
+    G = package.Graph.from_names(['shade'])
 
 
     packages = dict([(p.name, p) for p in G.nodes()])
