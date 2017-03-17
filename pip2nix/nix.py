@@ -3,6 +3,7 @@ from traits.api import HasTraits, Trait, List, Str, Bool
 from pip2nix import pypi, package
 
 import pkg_resources
+from collections import defaultdict
 from cStringIO import StringIO
 from subprocess import check_output, CalledProcessError
 import textwrap
@@ -90,8 +91,7 @@ class Package(HasTraits):
         fetcher = fetchurl(url=self.pypi.pinned.url,
                            sha256=self.pypi.pinned.sha256)
 
-        inputs = self.package.buildInputs.get(self.name, []) + \
-                 self.setupRequires.get(self.name, [])
+        inputs = self.package.buildInputs[self.name] + self.setupRequires
         buildInputs = ' '.join(inputs)
 
 
@@ -119,7 +119,7 @@ def user_package_additions(inputs):
     :rtype: :class:`dict` from package name -> [other name]
     """
 
-    ret = dict()
+    ret = defaultdict(list)
     for pkg, deps in inputs:
         names = str(deps).split(',')
         names = map(str.strip, names)
@@ -129,22 +129,27 @@ def user_package_additions(inputs):
 
 
 @click.command()
-@click.argument('pkgs', nargs=-1)
+@click.option('-p', '--python_package', multiple=True)
 @click.option('-i', '--build-inputs', nargs=2, multiple=True)
 @click.option('-s', '--setup-requires', nargs=2, multiple=True)
-@click.option('-o', '--out-file', default='requirements.nix')
-@click.option('-p', '--graphviz-prefix', default='requirements')
+@click.option('-o', '--out-file', nargs=1, default='requirements.nix')
+@click.option('-g', '--graphviz-prefix', default='requirements')
 @click.option('-T', '--graphviz-type', default='pdf')
-def main(pkgs, build_inputs, setup_requires, out_file, graphviz_prefix, graphviz_type):
+def main(python_package, build_inputs, setup_requires, out_file, graphviz_prefix, graphviz_type):
 
-    pkgs = map(str, pkgs)
+    pkgs = map(str, python_package)
     buildInputs = user_package_additions(build_inputs)
     setupRequires = user_package_additions(setup_requires)
 
     import coloredlogs
-    coloredlogs.install()
+    coloredlogs.install(fmt='%(asctime)s %(levelname)-9s > %(message)s',
+                        datefmt='%H:%M:%S',
+                        level_styles={
+                            'info': {'color':'white'},
+                            'debug':{'color':'yellow'},
+                            'critical':{'color':'red', 'bold':True},
+                            'error':{'color':'red'}})
 
-    logging.basicConfig(level='DEBUG')
     logging.getLogger('requests').setLevel('WARNING')
 
     G = package.Graph.from_names(pkgs, buildInputs=buildInputs)

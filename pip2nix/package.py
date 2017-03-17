@@ -3,6 +3,7 @@ from __future__ import print_function
 import hashlib
 import json
 import logging
+from collections import defaultdict
 from pipes import quote
 from subprocess import check_output
 
@@ -180,7 +181,7 @@ class Graph(HasTraits):
     def from_names(cls, names, buildInputs=None):
         logger.info('Building dependency graph for %s', ' '.join(names))
 
-        buildInputs = buildInputs or dict()
+        buildInputs = buildInputs or defaultdict(list)
         preinstalled = empty_venv_packages()
         logger.info('Preinstalled packages: %s', ', '.join(preinstalled))
 
