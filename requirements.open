@@ -5,3 +5,4 @@ requests
 networkx
 pygraphviz
 click
+coloredlogs

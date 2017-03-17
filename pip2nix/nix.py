@@ -99,7 +99,10 @@ class Package(HasTraits):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level='INFO')
+    import coloredlogs
+    coloredlogs.install()
+
+    logging.basicConfig(level='DEBUG')
     logging.getLogger('requests').setLevel('WARNING')
 
     # G = package.build_graph(['bucket-list'])
