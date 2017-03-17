@@ -133,7 +133,9 @@ def user_package_additions(inputs):
 @click.option('-i', '--build-inputs', nargs=2, multiple=True)
 @click.option('-s', '--setup-requires', nargs=2, multiple=True)
 @click.option('-o', '--out-file', default='requirements.nix')
-def main(pkgs, build_inputs, setup_requires, out_file):
+@click.option('-p', '--graphviz-prefix', default='requirements')
+@click.option('-T', '--graphviz-type', default='pdf')
+def main(pkgs, build_inputs, setup_requires, out_file, graphviz_prefix, graphviz_type):
 
     pkgs = map(str, pkgs)
     buildInputs = user_package_additions(build_inputs)
@@ -146,7 +148,7 @@ def main(pkgs, build_inputs, setup_requires, out_file):
     logging.getLogger('requests').setLevel('WARNING')
 
     G = package.Graph.from_names(pkgs, buildInputs=buildInputs)
-
+    G.graphviz(outprefix=graphviz_prefix, type=graphviz_type)
 
     packages = dict([(p.name, p) for p in G.nodes()])
 
@@ -160,9 +162,10 @@ def main(pkgs, build_inputs, setup_requires, out_file):
         pypi_packages[pkg.name].pin(pkg.version)
 
     logger.info('Creating Nix derivations')
-    nix_packages = [Package(package = packages[p.name],
-                            pypi = pypi_packages[p.name],
-                            doCheck = False)
+    nix_packages = [Package(package=packages[p.name],
+                            pypi=pypi_packages[p.name], doCheck=False,
+                            setupRequires=setupRequires[p.name])
+
                     for p in packages.values()]
 
 
