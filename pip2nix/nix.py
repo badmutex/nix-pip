@@ -141,6 +141,9 @@ def main(python_package, build_inputs, setup_requires, out_file, graphviz_prefix
     buildInputs = user_package_additions(build_inputs)
     setupRequires = user_package_additions(setup_requires)
 
+    for extraPackages in setupRequires.values():
+        pkgs.extend(extraPackages)
+
     import coloredlogs
     coloredlogs.install(fmt='%(asctime)s %(levelname)-9s > %(message)s',
                         datefmt='%H:%M:%S',

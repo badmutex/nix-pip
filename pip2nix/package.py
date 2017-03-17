@@ -57,9 +57,11 @@ def clear_cache():
 
 def empty_venv_packages():
     logger.info('Determining preinstalled packages in a virtualenv')
+    pkgs = dict()
     with tmpvenv() as (shell, venvdir, pip):
         frozen = freeze([])
-        pkgs = set([p.name for p in frozen])
+        for p in frozen:
+            pkgs[p.name] = Package(name=p.name, version=p.version)
         return pkgs
 
 
@@ -70,7 +72,7 @@ class Package(HasTraits):
     name = Str
     version = Str
     dependencies = Set(This)
-    preinstalled = Set(Str)
+    preinstalled = Dict(Str, This)
     buildInputs = Dict(Str, List(Str))
 
     def __eq__(self, other):
@@ -108,7 +110,7 @@ class Package(HasTraits):
             return
 
         frozen = freeze([self.frozen_name],
-                        preinstalled=self.preinstalled,
+                        preinstalled=self.preinstalled.keys(),
                         buildInputs=self.buildInputs.get(self.name))
 
         for entry in frozen:
@@ -187,7 +189,8 @@ class Graph(HasTraits):
 
         frozen = freeze(names, preinstalled=preinstalled)
 
-        packages = [Package(name=p.name, version=p.version,
+        packages = preinstalled.values() + \
+                   [Package(name=p.name, version=p.version,
                             preinstalled=preinstalled, buildInputs=buildInputs)
                     for p in frozen]
         logger.info('Processing %s', ' '.join(map(str, packages)))
