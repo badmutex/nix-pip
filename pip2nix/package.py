@@ -86,7 +86,7 @@ class Package(HasTraits):
 
     def apply_version_transformations(self, transformations=None):
         tx = transformations or VERSION_TRANSFORMS
-        logger.info('%s applying version transformations %s',
+        logger.debug('%s applying version transformations %s',
                     self, tx)
 
         ver = self.version
@@ -100,7 +100,7 @@ class Package(HasTraits):
             dep.apply_version_transformations(transformations=tx)
 
     def find_requirements(self):
-        logger.info('Finding requirements for %s', self)
+        logger.debug('Finding requirements for %s', self)
 
         if is_cached(self):
             logger.debug('Using cached %s', self)
@@ -122,7 +122,7 @@ class Package(HasTraits):
 
 
     def prune_dependencies(self):
-        logger.info('Prunning dependencies for %s', self)
+        logger.debug('Prunning dependencies for %s', self)
 
         dep_names = set([dep.name for dep in self.dependencies])  # :: {str}
         to_prune  = set()                                         # :: {str}
@@ -191,15 +191,21 @@ class Graph(HasTraits):
                     for p in frozen]
         logger.info('Processing %s', ' '.join(map(str, packages)))
 
+        logger.info('Finding requirements')
         for pkg in packages:
+            logger.info('\t%s', pkg.name)
             pkg.find_requirements()
 
         clear_cache()
 
+        logger.info('Computing transitive dependencies')
         for pkg in packages:
+            logger.info('\t%s', pkg.name)
             pkg.prune_dependencies()
 
+        logger.info('Applying version transformations')
         for pkg in packages:
+            logger.info('\t%s', pkg.name)
             pkg.apply_version_transformations()
 
         G = nx.DiGraph()
