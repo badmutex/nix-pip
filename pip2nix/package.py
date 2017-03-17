@@ -55,6 +55,7 @@ def clear_cache():
     global CACHE
     CACHE.clear()
 
+
 def empty_venv_packages():
     logger.info('Determining preinstalled packages in a virtualenv')
     pkgs = dict()
@@ -63,7 +64,6 @@ def empty_venv_packages():
         for p in frozen:
             pkgs[p.name] = Package(name=p.name, version=p.version)
         return pkgs
-
 
 
 
