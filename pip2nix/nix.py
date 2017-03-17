@@ -1,4 +1,4 @@
-from traits.api import HasTraits, Trait, Bool
+from traits.api import HasTraits, Trait, Dict, List, Str, Bool
 
 from pip2nix import pypi, package
 
@@ -69,6 +69,7 @@ class Package(HasTraits):
     package = Trait(package.Package)
     pypi = Trait(pypi.Package)
     doCheck = Bool(True)
+    setupRequires = Dict(Str, List(Str))
 
     @property
     def name(self):
@@ -89,13 +90,18 @@ class Package(HasTraits):
         fetcher = fetchurl(url=self.pypi.pinned.url,
                            sha256=self.pypi.pinned.sha256)
 
+        inputs = self.package.buildInputs.get(self.name, []) + \
+                 self.setupRequires.get(self.name, [])
+        buildInputs = ' '.join(inputs)
+
+
         drv = mkDerivation_tmpl.format(
             name = self.package.name,
             version = self.package.version,
             fetcher = indent(fetcher),
             format = format,
             pythonDependencies = ' '.join(map(lambda pkg: pkg.name, self.package.dependencies)),
-            buildInputs = ' '.join(self.package.buildInputs.get(self.name, [])),
+            buildInputs = buildInputs,
             doCheck = 'true' if self.doCheck else 'false',
         )
 
