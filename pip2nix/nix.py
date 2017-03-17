@@ -157,8 +157,9 @@ def main(python_package, build_inputs, setup_requires, out_file, graphviz_prefix
 
     packages = dict([(p.name, p) for p in G.nodes()])
 
+    session = pypi.requests.Session()
     pypi_packages = dict(
-        [(p.name, pypi.Package.from_pypi(p.name)) for p in packages.values()]
+        [(p.name, pypi.Package.from_pypi(p.name, session=session)) for p in packages.values()]
     )
 
     logger.info('Pinning packages')

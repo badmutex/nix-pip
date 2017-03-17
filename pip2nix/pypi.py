@@ -118,11 +118,12 @@ def identify_release_platform(release):
     return result
 
 
-def get_package(package):
+def get_package(package, session=None):
     url = 'https://pypi.python.org/pypi/{}/json'.format(package)
     logger.info('Querying PyPi for %s', package)
 
-    response = requests.get(url)
+    query = session or requests
+    response = query.get(url)
 
     if not response.status_code == 200:
         logger.critical('GET %s failed with %s', url, response.status_code)
@@ -175,13 +176,14 @@ class Release(HasTraits):
 
 class Package(HasTraits):
 
+    session = Trait(requests.Session)
     pypi = Trait(PyPiResponse)
     releases = Dict(Str, Dict(Str, List(Release)))  # version str -> kind -> [Release]
     pinned = Trait(Release)
 
     @classmethod
-    def from_pypi(cls, name):
-        pypi = get_package(name)
+    def from_pypi(cls, name, session=None):
+        pypi = get_package(name, session=session)
 
         all_releases = defaultdict(lambda: defaultdict(list))
         for version, releases in pypi.releases.items():
