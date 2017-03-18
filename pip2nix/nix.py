@@ -65,6 +65,10 @@ def mkPackageSet(requirements):
     return reqs
 
 
+def nixifyPackageName(name):
+    return name.replace('.', '-')
+
+
 class Package(HasTraits):
 
     package = Trait(package.Package)
@@ -92,15 +96,16 @@ class Package(HasTraits):
                            sha256=self.pypi.pinned.sha256)
 
         inputs = self.package.buildInputs.get(self.name, []) + self.setupRequires
-        buildInputs = ' '.join(inputs)
+        buildInputs = ' '.join(map(nixifyPackageName, inputs))
 
 
         drv = mkDerivation_tmpl.format(
-            name = self.package.name,
+            name = nixifyPackageName(self.package.name),
             version = self.package.version,
             fetcher = indent(fetcher),
             format = format,
-            pythonDependencies = ' '.join(map(lambda pkg: pkg.name, self.package.dependencies)),
+            pythonDependencies = ' '.join(map(lambda pkg: nixifyPackageName(pkg.name),
+                                              self.package.dependencies)),
             buildInputs = buildInputs,
             doCheck = 'true' if self.doCheck else 'false',
         )
