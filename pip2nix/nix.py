@@ -56,7 +56,7 @@ def mkPackageSet(requirements):
 
     for pkg in requirements:
         drv = pkg.mkDerivation()
-        s = '{name} = {drv};\n'.format(name=pkg.package.name, drv=indent(drv))
+        s = '{name} = {drv};\n'.format(name=pkg.name, drv=indent(drv))
         builder.write(s)
 
     reqs = mkRequirements_tmpl.format(packages=indent(builder.getvalue()))
@@ -65,7 +65,7 @@ def mkPackageSet(requirements):
     return reqs
 
 
-def nixifyPackageName(name):
+def nixifyName(name):
     return name.replace('.', '-')
 
 
@@ -78,7 +78,7 @@ class Package(HasTraits):
 
     @property
     def name(self):
-        return self.package.name
+        return nixifyName(self.package.name)
 
     def mkDerivation(self):
         logger.info('mkDerivation for %s', self.package)
@@ -96,15 +96,15 @@ class Package(HasTraits):
                            sha256=self.pypi.pinned.sha256)
 
         inputs = self.package.buildInputs.get(self.name, []) + self.setupRequires
-        buildInputs = ' '.join(map(nixifyPackageName, inputs))
+        buildInputs = ' '.join(inputs)
 
 
         drv = mkDerivation_tmpl.format(
-            name = nixifyPackageName(self.package.name),
+            name = self.package.name,
             version = self.package.version,
             fetcher = indent(fetcher),
             format = format,
-            pythonDependencies = ' '.join(map(lambda pkg: nixifyPackageName(pkg.name),
+            pythonDependencies = ' '.join(map(lambda pkg: nixifyName(pkg.name),
                                               self.package.dependencies)),
             buildInputs = buildInputs,
             doCheck = 'true' if self.doCheck else 'false',
