@@ -6,6 +6,7 @@
 }}:
 
 with pkgs;
+with pythonPackages;
 
 rec {{
 
