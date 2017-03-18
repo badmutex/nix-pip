@@ -11,6 +11,7 @@ import re
 import sys
 
 from collections import defaultdict
+from itertools import groupby
 
 logger = logging.getLogger(__name__)
 
@@ -179,36 +180,44 @@ class Package(HasTraits):
 
     session = Trait(requests.Session)
     pypi = Trait(PyPiResponse)
-    releases = Dict(Str, Dict(Str, List(Release)))  # version str -> kind -> [Release]
+    releases = Dict(Str, List(Release))  # version str -> [Release]
     pinned = Trait(Release)
 
     @classmethod
     def from_pypi(cls, name, session=None):
         pypi = get_package(name, session=session)
 
-        all_releases = defaultdict(lambda: defaultdict(list))
+        all_releases = defaultdict(list)
         for version, releases in pypi.releases.items():
             for release in releases:
                 rel = Release.from_pypi(release)
-                all_releases[version][rel.kind].append(rel)
+                all_releases[version].append(rel)
 
         return cls(pypi=pypi, releases=all_releases, session=session)
 
-    def pin(self, version):
+    def pin(self, version, python_version='py2'):
         releases = self.releases[version]
 
-        prefered_kinds = ['universal', 'source']
-        for k in prefered_kinds:
-            if k in releases:
-                kind_releases = releases[k]
-                r = kind_releases[0]
-                logger.debug('Pinned %s (%s, %s)', r.kind, r.filename, r.packagetype)
-                r.pin(session=self.session)
-                self.pinned = r
-                return
+        grouped = defaultdict(list)
+        for k, g in groupby(releases, lambda r: r.kind):
+            grouped[k].extend(list(g))
 
-        import pdb; pdb.set_trace()
-        raise Exception('Unable to pin')
+        prefered_kinds = ['universal', 'source']
+
+        for rel in grouped['universal']:
+            if python_version in rel.python_version:
+                    logger.info('Pinned %s wheel (%s, %s, %s)',
+                                 rel.kind, rel.filename, rel.packagetype, rel.python_version)
+                    rel.pin(session=self.session)
+                    self.pinned = rel
+                    return
+
+        logger.info('Pinned %s source', self)
+        assert len(grouped['source']) > 0
+        rel = grouped['source'][0]
+        rel.pin(session=self.session)
+        self.pinned = rel
+        return
 
 
 
