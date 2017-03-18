@@ -4,6 +4,7 @@ from pip2nix import pypi, package
 
 import pkg_resources
 from collections import defaultdict
+import cPickle as pickle
 from cStringIO import StringIO
 from subprocess import check_output, CalledProcessError
 import textwrap
@@ -140,7 +141,9 @@ def user_package_additions(inputs):
 @click.option('-o', '--out-file', nargs=1, default='requirements.nix')
 @click.option('-g', '--graphviz-prefix', default='requirements')
 @click.option('-T', '--graphviz-type', default='pdf')
-def main(python_package, build_inputs, setup_requires, out_file, graphviz_prefix, graphviz_type):
+@click.option('-C', '--cache-graph', default='.pip2nix.graph')
+def main(python_package, build_inputs, setup_requires, out_file,
+         graphviz_prefix, graphviz_type, cache_graph):
 
     pkgs = map(str, python_package)
     buildInputs = user_package_additions(build_inputs)
@@ -160,7 +163,18 @@ def main(python_package, build_inputs, setup_requires, out_file, graphviz_prefix
 
     logging.getLogger('requests').setLevel('WARNING')
 
-    G = package.Graph.from_names(pkgs, buildInputs=buildInputs)
+    if os.path.exists(cache_graph):
+        logger.info('Loading cached graph')
+        with open(cache_graph, 'rb') as fd:
+            G = pickle.load(fd)
+
+    else:
+
+        G = package.Graph.from_names(pkgs, buildInputs=buildInputs)
+        logger.info('Saving graph to %s', cache_graph)
+        with open(cache_graph, 'wb') as fd:
+            pickle.dump(G, fd)
+
     G.graphviz(outprefix=graphviz_prefix, type=graphviz_type)
 
     packages = dict([(p.name, p) for p in G.nodes()])
