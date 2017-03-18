@@ -95,8 +95,8 @@ class Package(HasTraits):
         fetcher = fetchurl(url=self.pypi.pinned.url,
                            sha256=self.pypi.pinned.sha256)
 
-        inputs = self.package.buildInputs.get(self.name, []) + self.setupRequires
-        buildInputs = ' '.join(inputs)
+        inputs = self.package.buildInputs.get(self.package.name, []) + self.setupRequires
+        buildInputs = ' '.join(map(nixifyName, inputs))
 
 
         drv = mkDerivation_tmpl.format(
