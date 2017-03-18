@@ -7,10 +7,16 @@
   Automatically and painlessly (as possible) derive Nix package sets
   for python dependencies.
 
-  Intended usage:
+* Usage
 
   - =pip2nix= generates the Nix expressions from the current loaded python environment
   - =pip2nix -r requirements.txt= uses the requirements specified in the given file
+  - =pip2nix -p foo -p bar= will generate requirement sets to allow
+    installation of packages =foo= and =bar=
+  - =pip2nix -p foo -s cryptography packaging -i cryptography openssl
+    -i cffi libffi= This generates derivations for =foo= and it's
+    dependencies. Two of the depencencies are =cryptography= and
+    =cffi= which respectively depend on =openssl= and =libffi=.
 
   This will generate =requirements.nix=
 
