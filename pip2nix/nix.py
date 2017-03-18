@@ -145,7 +145,7 @@ def main(python_package, build_inputs, setup_requires, out_file, graphviz_prefix
         pkgs.extend(extraPackages)
 
     import coloredlogs
-    coloredlogs.install(fmt='%(asctime)s %(levelname)-9s > %(message)s',
+    coloredlogs.install(fmt='%(asctime)s %(message)s',
                         datefmt='%H:%M:%S',
                         level_styles={
                             'info': {'color':'white'},
