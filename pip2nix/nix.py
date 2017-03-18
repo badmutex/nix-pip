@@ -3,8 +3,10 @@ from traits.api import HasTraits, Trait, List, Str, Bool
 from pip2nix import pypi, package
 
 import pkg_resources
-from collections import defaultdict
 import cPickle as pickle
+import os
+
+from collections import defaultdict
 from cStringIO import StringIO
 from subprocess import check_output, CalledProcessError
 import textwrap
