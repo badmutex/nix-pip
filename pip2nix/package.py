@@ -189,8 +189,7 @@ class Graph(HasTraits):
 
         frozen = freeze(names, preinstalled=preinstalled)
 
-        packages = preinstalled.values() + \
-                   [Package(name=p.name, version=p.version,
+        packages = [Package(name=p.name, version=p.version,
                             preinstalled=preinstalled, buildInputs=buildInputs)
                     for p in frozen]
         logger.info('Processing %s', ' '.join(map(str, packages)))
