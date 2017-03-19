@@ -3,6 +3,7 @@ from __future__ import print_function
 import hashlib
 import json
 import logging
+import os.path
 from collections import defaultdict
 from pipes import quote
 from subprocess import check_output
@@ -175,6 +176,7 @@ def freeze(packages, preinstalled=None, buildInputs=None):
 class Graph(HasTraits):
 
     digraph = Trait(nx.DiGraph)
+    sha256 = Str(minlength=64, maxlength=64)
 
     def __getattr__(self, name):
         return getattr(self.digraph, name)
@@ -217,22 +219,28 @@ class Graph(HasTraits):
             pkg.apply_version_transformations()
 
         G = nx.DiGraph()
+        digest = hashlib.sha256()
         for pkg in packages:
             G.add_node(pkg)
 
             for dep in pkg.dependencies:
                 G.add_edge(pkg, dep)
 
-        return cls(digraph=G)
+            digest.update(str(pkg))
 
-    def graphviz(self, outprefix='requirements', type='pdf'):
-        logger.info('Creating graphviz depiction')
+        return cls(digraph=G, sha256=digest.hexdigest())
+
+    def graphviz(self, filename):
+        logger.info('Creating graphviz depiction in %s', filename)
+
+        outprefix, ext = os.path.splitext(filename)
+        plugin = ext.lstrip('.')
 
         dotfile = outprefix + '.dot'
-        outfile = outprefix + '.' + type
+        outfile = outprefix + '.' + plugin
 
         nx.nx_agraph.write_dot(self.digraph, dotfile)
-        cmd = ['dot', '-Grankdir=LR', '-T%s' % type, dotfile]
+        cmd = ['dot', '-Grankdir=LR', '-T%s' % plugin, dotfile]
         data = check_output(cmd)
         with open(outfile, 'wb') as fd:
             fd.write(data)

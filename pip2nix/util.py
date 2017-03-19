@@ -1,6 +1,7 @@
 import warnings
 import functools
 import os
+import shelve
 import shutil
 import tempfile
 
@@ -59,3 +60,14 @@ def tmpvenv(python='python', venvdir=None, buildInputs=None):
         pip = os.path.join(venvdir, 'bin', 'pip')
         yield (shell, venvdir, pip)
 
+
+@contextmanager
+def shelve_open(*args, **kwargs):
+    "Passthrough to :func:`shelve.open`"
+
+    shelf = shelve.open(*args, **kwargs)
+    try:
+        yield shelf
+    finally:
+        shelf.sync()
+        shelf.close()

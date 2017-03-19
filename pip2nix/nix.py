@@ -1,4 +1,4 @@
-from traits.api import HasTraits, Trait, List, Str, Bool
+from traits.api import HasTraits, Trait, List, Dict, Str, Bool
 
 from pip2nix import pypi, package
 
@@ -78,6 +78,7 @@ class Package(HasTraits):
     pypi = Trait(pypi.Package)
     doCheck = Bool(True)
     setupRequires = List(Str)
+    buildInputs = Dict(Str, List(Str))
 
     @property
     def name(self):
@@ -98,7 +99,7 @@ class Package(HasTraits):
         fetcher = fetchurl(url=self.pypi.pinned.url,
                            sha256=self.pypi.pinned.sha256)
 
-        inputs = self.package.buildInputs.get(self.package.name, [])
+        inputs = self.buildInputs.get(self.package.name, [])
         buildInputs = ' '.join(map(nixifyName, inputs))
 
         propagatedBuildInputs = [nixifyName(p.name) for p in self.package.dependencies] + \
@@ -116,93 +117,3 @@ class Package(HasTraits):
         )
 
         return drv
-
-
-
-
-def user_package_additions(inputs):
-    """Process the user-specified package-specific build inputs
-
-    The inputs are in the form:
-    ("python package name", "other_name1,other_name2,other_name_etc")
-
-    :rtype: :class:`dict` from package name -> [other name]
-    """
-
-    ret = defaultdict(list)
-    for pkg, deps in inputs:
-        names = str(deps).split(',')
-        names = map(str.strip, names)
-        ret[str(pkg)] = names
-
-    return ret
-
-
-@click.command()
-@click.option('-p', '--python_package', multiple=True)
-@click.option('-i', '--build-inputs', nargs=2, multiple=True)
-@click.option('-s', '--setup-requires', nargs=2, multiple=True)
-@click.option('-o', '--out-file', nargs=1, default='requirements.nix')
-@click.option('-g', '--graphviz-prefix', default='requirements')
-@click.option('-T', '--graphviz-type', default='pdf')
-@click.option('-C', '--cache-graph', default='.pip2nix.graph')
-def main(python_package, build_inputs, setup_requires, out_file,
-         graphviz_prefix, graphviz_type, cache_graph):
-
-    pkgs = map(str, python_package)
-    buildInputs = user_package_additions(build_inputs)
-    setupRequires = user_package_additions(setup_requires)
-
-    for extraPackages in setupRequires.values():
-        pkgs.extend(extraPackages)
-
-    import coloredlogs
-    coloredlogs.install(fmt='%(asctime)s %(message)s',
-                        datefmt='%H:%M:%S',
-                        level_styles={
-                            'info': {'color':'white'},
-                            'debug':{'color':'yellow'},
-                            'critical':{'color':'red', 'bold':True},
-                            'error':{'color':'red'}})
-
-    logging.getLogger('requests').setLevel('WARNING')
-
-    if os.path.exists(cache_graph):
-        logger.info('Loading cached graph')
-        with open(cache_graph, 'rb') as fd:
-            G = pickle.load(fd)
-
-    else:
-
-        G = package.Graph.from_names(pkgs, buildInputs=buildInputs)
-        logger.info('Saving graph to %s', cache_graph)
-        with open(cache_graph, 'wb') as fd:
-            pickle.dump(G, fd)
-
-    G.graphviz(outprefix=graphviz_prefix, type=graphviz_type)
-
-    packages = dict([(p.name, p) for p in G.nodes()])
-
-    session = pypi.requests.Session()
-    pypi_packages = dict(
-        [(p.name, pypi.Package.from_pypi(p.name, session=session)) for p in packages.values()]
-    )
-
-    logger.info('Pinning packages')
-    for pkg in G.nodes():
-        logger.debug('Pinning %s to %s', pkg.name, pkg.version)
-        pypi_packages[pkg.name].pin(pkg.version)
-
-    logger.info('Creating Nix derivations')
-    nix_packages = [Package(package=packages[p.name],
-                            pypi=pypi_packages[p.name], doCheck=False,
-                            setupRequires=setupRequires[p.name])
-
-                    for p in packages.values()]
-
-
-    reqs = mkPackageSet(nix_packages)
-    print(reqs)
-
-    with open(out_file, 'w') as fd:
-        fd.write(reqs)

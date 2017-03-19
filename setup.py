@@ -16,7 +16,7 @@ setup (
     },
     entry_points = {
         'console_scripts': [
-            'pip2nix=pip2nix.nix:main',
+            'pip2nix=pip2nix.main:entrypoint',
         ],
     },
 )
