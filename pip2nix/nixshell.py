@@ -32,7 +32,9 @@ class NixShell(object):
 
         torun = reduce(operator.add, monoid)
         logger.debug('Executing: %s', ' '.join(map(quote, torun)))
-        return check_output(torun)
+        output = check_output(torun)
+        logger.debug(output)
+        return output
 
     def __call__(self, cmd):
         return self.command(cmd)
