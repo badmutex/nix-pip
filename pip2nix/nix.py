@@ -3,16 +3,8 @@ from traits.api import HasTraits, Trait, List, Dict, Str, Bool
 from pip2nix import pypi, package
 
 import pkg_resources
-import cPickle as pickle
-import os
-
-from collections import defaultdict
 from cStringIO import StringIO
-from subprocess import check_output, CalledProcessError
-import textwrap
 
-import click
-import networkx as nx
 
 
 import logging
@@ -20,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 drv_whl = pkg_resources.resource_filename(__name__,
-                                               'data/derivation.nix.template')
+                                          'data/derivation.nix.template')
 
 fetchurl_tmpl = pkg_resources.resource_string(
     __name__,
