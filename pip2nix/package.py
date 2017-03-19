@@ -74,6 +74,7 @@ class Package(HasTraits):
     dependencies = Set(This)
     preinstalled = Dict(Str, This)
     buildInputs = Dict(Str, List(Str))
+    available = Dict(Str, This)  # :: name -> Package
 
     def __eq__(self, other):
         return \
@@ -117,11 +118,10 @@ class Package(HasTraits):
             if entry.name == self.name:
                 continue
 
-            pkg = Package(name=entry.name, version=entry.version,
-                          preinstalled=self.preinstalled,
-                          buildInputs=self.buildInputs)
-
+            pkg = self.available[entry.name]
             self.dependencies.add(pkg)
+
+        logger.debug('\t%s', map(str, sorted(list(self.dependencies))))
 
 
     def prune_dependencies(self):
@@ -181,6 +181,9 @@ class Graph(HasTraits):
 
     @classmethod
     def from_names(cls, names, buildInputs=None):
+        logger.debug('Building dependencygraph for names %s', names)
+        names = sorted(set(names))
+
         logger.info('Building dependency graph for %s', ' '.join(names))
 
         buildInputs = buildInputs or defaultdict(list)
@@ -192,6 +195,8 @@ class Graph(HasTraits):
         packages = [Package(name=p.name, version=p.version,
                             preinstalled=preinstalled, buildInputs=buildInputs)
                     for p in frozen]
+        for p in packages:
+            p.available = dict((p.name, p) for p in packages)
         logger.info('Processing %s', ' '.join(map(str, packages)))
 
         logger.info('Finding requirements')
