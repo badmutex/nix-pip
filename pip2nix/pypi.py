@@ -206,13 +206,13 @@ class Package(HasTraits):
 
         for rel in grouped['universal']:
             if python_version in rel.python_version:
-                    logger.info('Pinned %s wheel (%s, %s, %s)',
+                    logger.debug('Pinned %s wheel (%s, %s, %s)',
                                  rel.kind, rel.filename, rel.packagetype, rel.python_version)
                     rel.pin(session=self.session)
                     self.pinned = rel
                     return
 
-        logger.info('Pinned %s source', self)
+        logger.debug('Pinned %s source', self)
         assert len(grouped['source']) > 0
         rel = grouped['source'][0]
         rel.pin(session=self.session)
