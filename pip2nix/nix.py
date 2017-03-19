@@ -98,8 +98,11 @@ class Package(HasTraits):
         fetcher = fetchurl(url=self.pypi.pinned.url,
                            sha256=self.pypi.pinned.sha256)
 
-        inputs = self.package.buildInputs.get(self.package.name, []) + self.setupRequires
+        inputs = self.package.buildInputs.get(self.package.name, [])
         buildInputs = ' '.join(map(nixifyName, inputs))
+
+        propagatedBuildInputs = [nixifyName(p.name) for p in self.package.dependencies] + \
+                                self.setupRequires
 
 
         drv = mkDerivation_tmpl.format(
@@ -107,8 +110,7 @@ class Package(HasTraits):
             version = self.package.version,
             fetcher = indent(fetcher),
             format = format,
-            pythonDependencies = ' '.join(map(lambda pkg: nixifyName(pkg.name),
-                                              self.package.dependencies)),
+            pythonDependencies = ' '.join(propagatedBuildInputs),
             buildInputs = buildInputs,
             doCheck = 'true' if self.doCheck else 'false',
         )
