@@ -1,6 +1,5 @@
 { pkgs ? import ./pip2nix/data/nixpkgs.nix
 , venvdir ? ".venv"
-, name ? "cloudmesh_core"
 }:
 
 with pkgs;
@@ -94,6 +93,7 @@ let
 in
 
 pythonPackages.buildPythonPackage {
-  name = "${name}";
+  name = "pip2nix";
   buildInputs = [ python ] ++ buildInputs;
+  src = ./.;
 }

@@ -52,6 +52,7 @@ def user_package_additions(inputs):
     for pkg, deps in inputs:
         names = str(deps).split(',')
         names = map(str.strip, names)
+        names = map(str.lower, names)
         ret[str(pkg)] = names
 
     return ret

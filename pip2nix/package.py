@@ -167,6 +167,8 @@ def freeze(packages, preinstalled=None, buildInputs=None):
 
         frozen = shell([pip, 'list', '--format', 'json'])
         frozen_json = json.loads(frozen.strip())
+        for pkg in frozen_json:
+            pkg['name'] = pkg['name'].lower()
         munched = filter(
             lambda pkg: pkg.name not in preinstalled,
             munchify(frozen_json))

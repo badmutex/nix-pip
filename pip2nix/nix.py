@@ -49,9 +49,11 @@ def mkPackageSet(requirements):
 
     builder = StringIO()
 
+    requirements = sorted(requirements, cmp=lambda a, b: cmp(a.name.lower(), b.name.lower()))
+
     for pkg in requirements:
         drv = pkg.mkDerivation()
-        s = '{name} = {drv};\n'.format(name=pkg.name, drv=indent(drv))
+        s = '{name} = {drv};\n'.format(name=pkg.name.lower(), drv=indent(drv))
         builder.write(s)
 
     reqs = mkRequirements_tmpl.format(packages=indent(builder.getvalue()))
