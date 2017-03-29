@@ -17,6 +17,8 @@ let
     ;
 
 
+  version = builtins.readFile ./VERSION;
+
   monotonic = pythonPackages.buildPythonPackage {
     name = "monotonic";
     version = "1.3";
@@ -93,7 +95,8 @@ let
 in
 
 pythonPackages.buildPythonPackage {
-  name = "pip2nix";
+  inherit version;
+  name = "pip2nix-${version}";
   buildInputs = [ python ] ++ buildInputs;
   src = ./.;
 }

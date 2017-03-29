@@ -6,8 +6,7 @@ from setuptools import setup, find_packages
 setup (
 
     name = 'pip2nix',
-    use_scm_version = True,
-    setup_requires = ['setuptools_scm'],
+    version = open('VERSION').read().strip(),
     url = 'https://github.com/badi/pip2nix',
     license = 'Apache 2.0',
     packages = find_packages(exclude=['docs', 'test']),
