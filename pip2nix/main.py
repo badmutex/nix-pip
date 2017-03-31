@@ -74,7 +74,7 @@ def default_config_dir():
 
 
 @click.command()
-@click.option('-V', '--version', help='Show version and exit', is_flag=True)
+@click.option('-V', '--version', help='Show version and exit', default=False, is_flag=True)
 @click.option('-r', '--requirements', multiple=True, help='Paths to the requirments files')
 @click.option('-p', '--package', multiple=True, help='Package names')
 @click.option('-i', '--build-inputs', nargs=2, multiple=True)
@@ -86,10 +86,10 @@ def main(version, requirements, package, build_inputs, setup_requires, config_di
 
     version_file = pkg_resources.resource_filename(__name__, 'VERSION')
     with open(version_file) as fd:
-        version = fd.read().strip()
+        my_version = fd.read().strip()
 
     if version:
-        click.echo(version)
+        click.echo(my_version)
         return
 
 
