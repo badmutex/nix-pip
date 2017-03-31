@@ -1,5 +1,6 @@
 import warnings
 import functools
+import itertools
 import os
 import shelve
 import shutil
@@ -8,6 +9,10 @@ import tempfile
 from contextlib import contextmanager
 
 from pip2nix.nixshell import NixShell
+
+
+def concat(iters):
+    return list(itertools.chain(*iters))
 
 
 def deprecated(func):
