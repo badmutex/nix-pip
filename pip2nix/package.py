@@ -186,7 +186,7 @@ class Graph(HasTraits):
 
     @classmethod
     def from_names(cls, names, buildInputs=None):
-        logger.debug('Building dependencygraph for names %s', names)
+        logger.debug('Building dependencygraph for names %s with %s', names, buildInputs)
         names = sorted(set(names))
 
         logger.info('Building dependency graph for %s', ' '.join(names))
