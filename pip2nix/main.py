@@ -83,8 +83,13 @@ def default_config_dir():
 def main(requirements, package, build_inputs, setup_requires, config_dir, graphviz, out_file):
 
     requirements = list(requirements)
+    logger.debug('Requirements %s', requirements)
+
     buildInputs = user_package_additions(build_inputs)
+    logger.debug('Build Inputs: %s', buildInputs)
+
     setupRequires = user_package_additions(setup_requires)
+    logger.debug('Set Requirements: %s', setupRequires)
 
     if not os.path.exists(config_dir):
         logger.debug('Creating missing config dir %s', config_dir)
