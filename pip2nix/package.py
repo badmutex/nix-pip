@@ -12,7 +12,7 @@ from munch import munchify
 import networkx as nx
 from traits.api import HasTraits, Trait, Dict, List, Str, Set, This
 
-from pip2nix.util import tmpvenv
+from pip2nix.util import concat, tmpvenv
 
 
 logger = logging.getLogger(__name__)
@@ -159,8 +159,9 @@ class Package(HasTraits):
 
 def freeze(packages, preinstalled=None, buildInputs=None):
     preinstalled = preinstalled or set()
+    buildInputs = buildInputs or list()
 
-    logger.debug('Freezing packages: %s', ', '.join(packages))
+    logger.debug('Freezing packages: %s with %s', ', '.join(packages), ', '.join(buildInputs))
     with tmpvenv(buildInputs=buildInputs) as (shell, venvdir, pip):
         if packages:
             shell([pip, 'install'] + map(quote, packages))
@@ -194,7 +195,7 @@ class Graph(HasTraits):
         preinstalled = empty_venv_packages()
         logger.info('Preinstalled packages: %s', ', '.join(preinstalled))
 
-        frozen = freeze(names, preinstalled=preinstalled)
+        frozen = freeze(names, preinstalled=preinstalled, buildInputs=concat(buildInputs.values()))
 
         packages = [Package(name=p.name, version=p.version,
                             preinstalled=preinstalled, buildInputs=buildInputs)
