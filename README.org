@@ -29,7 +29,6 @@
 
 * Usage
 
-  - =pip2nix= generates the Nix expressions from the current loaded python environment
   - =pip2nix -r requirements.txt= uses the requirements specified in the given file
   - =pip2nix -p foo -p bar= will generate requirement sets to allow
     installation of packages =foo= and =bar=
