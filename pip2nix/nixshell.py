@@ -1,6 +1,6 @@
 import operator
 from pipes import quote
-from subprocess import check_output
+from subprocess import check_output, CalledProcessError
 
 import logging
 logger = logging.getLogger(__name__)
@@ -32,7 +32,13 @@ class NixShell(object):
 
         torun = reduce(operator.add, monoid)
         logger.debug('Executing: %s', ' '.join(map(quote, torun)))
-        output = check_output(torun)
+
+        try:
+            output = check_output(torun)
+        except CalledProcessError as e:
+            logger.error('Output:\n' + e.output)
+            raise
+
         logger.debug(output)
         return output
 
