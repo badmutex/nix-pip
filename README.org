@@ -12,6 +12,21 @@
   - Determine dependency graph of python packages
   - Cache graphs between runs
 
+* Installation
+
+  1. Clone this repository:
+
+     #+BEGIN_EXAMPLE
+     $ git clone git://github.com/badi/pip2nix
+     $ cd pip2nix
+     #+END_EXAMPLE
+
+  2. Install using =nix-env=
+
+     #+BEGIN_EXAMPLE
+     $ nix-env -f . -i
+     #+END_EXAMPLE
+
 * Usage
 
   - =pip2nix= generates the Nix expressions from the current loaded python environment
