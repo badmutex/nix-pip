@@ -1,1 +1,1 @@
-include pip2nix/data/*
+recursive-include pip2nix *
