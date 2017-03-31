@@ -1,5 +1,4 @@
 { pkgs ? import ./pip2nix/data/nixpkgs.nix
-, venvdir ? ".venv"
 }:
 
 with pkgs;
@@ -65,9 +64,9 @@ let
 
 in
 
-pythonPackages.buildPythonPackage {
+pythonPackages.buildPythonApplication {
   inherit version;
   name = "pip2nix-${version}";
-  buildInputs = [ python ] ++ buildInputs;
+  propagatedBuildInputs = buildInputs ++ builtins.attrValues packages;
   src = ./.;
 }
