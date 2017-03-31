@@ -16,7 +16,7 @@ let
     ;
 
 
-  version = builtins.readFile ./VERSION;
+  version = builtins.readFile ./pip2nix/VERSION;
 
   callPythonPackage = path: attrs: with pythonPackages;
     callPackage path ({ inherit buildPythonPackage fetchPypi; } // attrs) ;

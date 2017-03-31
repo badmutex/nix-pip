@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 setup (
 
     name = 'pip2nix',
-    version = open('VERSION').read().strip(),
+    version = open('pip2nix/VERSION').read().strip(),
     url = 'https://github.com/badi/pip2nix',
     license = 'Apache 2.0',
     packages = find_packages(exclude=['docs', 'test']),

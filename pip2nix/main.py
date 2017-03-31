@@ -2,6 +2,7 @@
 import click
 import os
 import os.path
+import pkg_resources
 
 import nix
 import pypi
@@ -73,6 +74,7 @@ def default_config_dir():
 
 
 @click.command()
+@click.option('-V', '--version', help='Show version and exit', is_flag=True)
 @click.option('-r', '--requirements', multiple=True, help='Paths to the requirments files')
 @click.option('-p', '--package', multiple=True, help='Package names')
 @click.option('-i', '--build-inputs', nargs=2, multiple=True)
@@ -80,7 +82,16 @@ def default_config_dir():
 @click.option('-C', '--config-dir', default=default_config_dir)
 @click.option('-g', '--graphviz', help='Generate a graphviz plot in this file')
 @click.option('-o', '--out-file', default='requirements.nix')
-def main(requirements, package, build_inputs, setup_requires, config_dir, graphviz, out_file):
+def main(version, requirements, package, build_inputs, setup_requires, config_dir, graphviz, out_file):
+
+    version_file = pkg_resources.resource_filename(__name__, 'VERSION')
+    with open(version_file) as fd:
+        version = fd.read().strip()
+
+    if version:
+        click.echo(version)
+        return
+
 
     requirements = list(requirements)
     logger.debug('Requirements %s', requirements)
