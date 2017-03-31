@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# -*- mode: shell-script -*-
+
+NEW_VERSION="$1"
+
+VERSION_FILE=pip2nix/VERSION
+
+echo -n "$NEW_VERSION" >"$VERSION_FILE"
+git commit -m "chg:dev: bump version to $NEW_VERSION" "$VERSION_FILE"
