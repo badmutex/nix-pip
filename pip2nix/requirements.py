@@ -20,7 +20,7 @@ class Requirements(HasTraits):
 
     @classmethod
     def from_iter(cls, names):
-        pkg_regex = r'^([a-zA-Z0-9=-_.]+)'
+        pkg_regex = r'^([a-zA-Z0-9=\-_.]+)'
         regex = re.compile(pkg_regex)
         logger.debug('Package regex: %s', pkg_regex)
 
