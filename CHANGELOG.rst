@@ -1,6 +1,33 @@
 Changelog
 =========
 
+v0.1.2 (2017-04-03)
+-------------------
+
+New
+~~~
+
+- Add installation instructions to readme. [Badi' Abdul-Wahid]
+
+- Learn to get version with ``-V`` or ``--version`` [Badi' Abdul-Wahid]
+
+- Add changelog. [Badi' Abdul-Wahid]
+
+Changes
+~~~~~~~
+
+- Install using ``nix-env -f . -i`` [Badi' Abdul-Wahid]
+
+Fix
+~~~
+
+- Correctly handle hyphenated PyPI package names. [Badi' Abdul-Wahid]
+
+  Due to bad regex hyphenated PyPI package names were truncated at the
+  hyphen. Eg "apache-libcloud" became just "apache"
+
+- Remove unsupported usage from readme. [Badi' Abdul-Wahid]
+
 v0.1.1 (2017-03-31)
 -------------------
 
