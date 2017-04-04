@@ -15,6 +15,20 @@ def concat(iters):
     return list(itertools.chain(*iters))
 
 
+def default_config_dir():
+
+    xdg_config_dir = os.environ.get('XDG_CONFIG_HOME')
+    if xdg_config_dir:
+        prefix = xdg_config_dir
+        subdir = 'pip2nix'
+    else:
+        prefix = '~'
+        subdir = '.pip2nix'
+
+    path = os.path.join(prefix, subdir)
+    return os.path.abspath(os.path.expanduser(os.path.expandvars(path)))
+
+
 def deprecated(func):
     '''This is a decorator which can be used to mark functions
     as deprecated. It will result in a warning being emitted
