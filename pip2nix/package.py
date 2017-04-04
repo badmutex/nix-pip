@@ -10,9 +10,10 @@ from subprocess import check_output
 
 from munch import munchify
 import networkx as nx
-from traits.api import HasTraits, Trait, Dict, List, Str, Set, This
+from traits.api import HasTraits, Trait, Dict, List, Str, Set, This, Bool
 
 from pip2nix.util import concat, tmpvenv
+from pip2nix.store import Store
 
 
 logger = logging.getLogger(__name__)
@@ -76,6 +77,7 @@ class Package(HasTraits):
     preinstalled = Dict(Str, This)
     buildInputs = Dict(Str, List(Str))
     available = Dict(Str, This)  # :: name -> Package
+    frozen = Bool(False)
 
     def __eq__(self, other):
         return \
@@ -94,6 +96,10 @@ class Package(HasTraits):
         logger.debug('%s applying version transformations %s',
                     self, tx)
 
+        if self.frozen:
+            logger.debug('Using stored %s', self)
+            return
+
         ver = self.version
         for old, new in tx.items():
             ver = ver.replace(old, new)
@@ -106,6 +112,10 @@ class Package(HasTraits):
 
     def find_requirements(self):
         logger.debug('Finding requirements for %s', self)
+
+        if self.frozen:
+            logger.debug('Using stored %s', self)
+            return
 
         if is_cached(self):
             logger.debug('Using cached %s', self)
@@ -127,6 +137,10 @@ class Package(HasTraits):
 
     def prune_dependencies(self):
         logger.debug('Prunning dependencies for %s', self)
+
+        if self.frozen:
+            logger.debug('Using stored %s', self)
+            return
 
         dep_names = set([dep.name for dep in self.dependencies])  # :: {str}
         to_prune  = set()                                         # :: {str}
@@ -155,6 +169,28 @@ class Package(HasTraits):
         pruned = filter(lambda dep: dep.name not in to_prune, self.dependencies)
         self.dependencies = set(pruned)
 
+    def freeze(self, store):
+        self.frozen = True
+        store.set(self.name, self.version, self)
+
+
+
+def _decode_ascii(obj):
+
+    def as_ascii(x):
+        if isinstance(x, unicode):
+            return x.encode('ascii')
+        else:
+            return x
+
+    for k in obj.keys():
+        v = obj.pop(k)
+        k = as_ascii(k)
+        v = as_ascii(v)
+
+        obj[k] = v
+
+    return obj
 
 
 def freeze(packages, preinstalled=None, buildInputs=None):
@@ -167,7 +203,7 @@ def freeze(packages, preinstalled=None, buildInputs=None):
             shell([pip, 'install'] + map(quote, packages))
 
         frozen = shell([pip, 'list', '--format', 'json'])
-        frozen_json = json.loads(frozen.strip())
+        frozen_json = json.loads(frozen.strip(), object_hook=_decode_ascii)
         for pkg in frozen_json:
             pkg['name'] = pkg['name'].lower()
         munched = filter(
@@ -185,8 +221,9 @@ class Graph(HasTraits):
         return getattr(self.digraph, name)
 
     @classmethod
-    def from_names(cls, names, buildInputs=None):
+    def from_names(cls, names, buildInputs=None, store=None):
         logger.debug('Building dependencygraph for names %s with %s', names, buildInputs)
+        store = store or Store()
         names = sorted(set(names))
 
         logger.info('Building dependency graph for %s', ' '.join(names))
@@ -197,9 +234,14 @@ class Graph(HasTraits):
 
         frozen = freeze(names, preinstalled=preinstalled, buildInputs=concat(buildInputs.values()))
 
-        packages = [Package(name=p.name, version=p.version,
-                            preinstalled=preinstalled, buildInputs=buildInputs)
-                    for p in frozen]
+        packages = []
+        for p in frozen:
+            pkg = store.get(p.name, p.version) or \
+                  Package(name=p.name, version=p.version,
+                          preinstalled=preinstalled,
+                          buildInputs=buildInputs)
+            packages.append(pkg)
+
         for p in packages:
             p.available = dict((p.name, p) for p in packages)
         logger.info('Processing %s', ' '.join(map(str, packages)))
@@ -220,6 +262,11 @@ class Graph(HasTraits):
         for pkg in packages:
             logger.info('\t%s', pkg.name)
             pkg.apply_version_transformations()
+
+        logger.info('Saving packages to store')
+        for pkg in packages:
+            logger.info('\t%s', pkg.name)
+            pkg.freeze(store)
 
         G = nx.DiGraph()
         digest = hashlib.sha256()

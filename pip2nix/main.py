@@ -1,5 +1,6 @@
 
 from pip2nix.util import default_config_dir
+from pip2nix.store import Store
 
 import click
 import os
@@ -106,13 +107,12 @@ def main(version, requirements, package, build_inputs, setup_requires, config_di
     for name in package:
         reqs.add(name)
 
-    shelf = os.path.join(config_dir, 'cache.dat')
+    store = Store(path=os.path.join(config_dir, 'store.dat'))
+    reqs.store = store
 
     ################################################################
 
-    reqs.unpersist(shelf)
     reqs.build_graph(buildInputs=buildInputs)
-    reqs.persist(shelf)
 
     ################################################################
 
