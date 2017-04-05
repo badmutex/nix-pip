@@ -1,6 +1,73 @@
 Changelog
 =========
 
+%%version%% (unreleased)
+------------------------
+
+New
+~~~
+
+- Learn to load configurations from a yaml file. [Badi' Abdul-Wahid]
+
+  The settings file should have three sections:
+  - ``requirements``
+  - ``setup_requires``
+  - ``build_inputs``
+
+  If these are not set a default empty configuration is used.
+
+  **requirements**
+
+  - inputs: a list of pip requirements files to read
+    eg::
+
+      - requirements.txt
+      - requirements-test.txt
+
+  - output: the output file to generate
+    default: ``requirements.nix``
+
+  - packages: list of extra python package requirements
+    eg::
+
+      - requests
+      - vcversioner==2.16.0.0
+
+  **setup_requires** and **build_inputs**
+
+  These sections are a mapping from package name to any requirements needed
+  to install and build (respectively) the package.
+
+  For instance::
+
+    setup_requires:
+      munch:
+        - six
+
+    build_inputs:
+      pygraphviz:
+        - graphviz
+        - pkgconfig
+      pyyaml:
+        - libyaml
+
+  The ``build_inputs`` entries map a python package name to the Nix
+  derivation names relative the top level of the Nix packge set.
+
+- Learn to reuse frozen packages accross independant invokations. [Badi'
+  Abdul-Wahid]
+
+Changes
+~~~~~~~
+
+- Sort ``inputs`` and ``propagatedBuildInputs`` lexicographically.
+  [Badi' Abdul-Wahid]
+
+Fix
+~~~
+
+- Fix type error on sorted buildInputs. [Badi' Abdul-Wahid]
+
 v0.1.2 (2017-04-03)
 -------------------
 
