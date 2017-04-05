@@ -11,6 +11,66 @@
 
   - Determine dependency graph of python packages
   - Cache graphs between runs
+  - Settings read from configuration file (eg: see [[file:.nix-pip.rc][.nix-pip.rc]])
+
+    The settings file should have three sections
+
+    - =requirements=
+    - =setup_requires=
+    - =build_inputs=
+
+    If these are not set a default empty configuration is used.
+
+    *requirements*
+
+    - inputs: a list of pip requirements files to read
+      eg:
+
+      #+BEGIN_SRC yaml
+      - requirements.txt
+      - requirements-test.txt
+      #+END_SRC
+
+      - output: the output file to generate
+        default: =requirements.nix=
+
+      - packages: list of extra python package requirements
+        eg:
+
+        #+BEGIN_SRC yaml
+        - requests
+        - vcversioner==2.16.0.0
+        #+END_SRC
+
+    *setup_requires* and *build_inputs*
+
+    These sections are a mapping from package name to any requirements
+    needed to install and build (respectively) the package.
+
+    For instance:
+
+    #+BEGIN_SRC yaml
+      setup_requires:
+        munch:
+          - six
+
+      build_inputs:
+        pygraphviz:
+          - graphviz
+          - pkgconfig
+        pyyaml:
+          - libyaml
+    #+END_SRC
+
+
+    The ``build_inputs`` entries map a python package name to the Nix
+    derivation names relative the top level of the Nix packge set.
+
+
+* Examples
+
+  =nix-pip= uses itself to manage dependencies.
+  See for instance [[file:.nix-pip.rc][.nix-pip.rc]] for current settings.
 
 * Installation
 
