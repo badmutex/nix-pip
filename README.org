@@ -109,7 +109,6 @@
   - Python
     See [[file:requirements.open][requirements.open]] for the python dependencies
   - Nix+Nixpkgs
-    A version of nixpkgs *after* 2017-02-17 is required due to the use of =fetchPyPI=.
     See [[file:pip2nix/data/nixpkgs.nix][nixpkgs.nix]]
 
 * Procedure
