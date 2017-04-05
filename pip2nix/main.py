@@ -1,6 +1,7 @@
 
 from pip2nix.util import default_config_dir
 from pip2nix.store import Store
+from pip2nix import config
 
 import click
 import os
@@ -73,7 +74,8 @@ def user_package_additions(inputs):
 @click.option('-C', '--config-dir', default=default_config_dir)
 @click.option('-g', '--graphviz', help='Generate a graphviz plot in this file')
 @click.option('-o', '--out-file', default='requirements.nix')
-def main(version, requirements, package, build_inputs, setup_requires, config_dir, graphviz, out_file):
+@click.option('-f', '--rc-file', default='.nix-pip.rc')
+def main(version, requirements, package, build_inputs, setup_requires, config_dir, graphviz, out_file, rc_file):
 
     version_file = pkg_resources.resource_filename(__name__, 'VERSION')
     with open(version_file) as fd:
@@ -85,26 +87,32 @@ def main(version, requirements, package, build_inputs, setup_requires, config_di
 
 
     requirements = list(requirements)
-    logger.debug('Requirements %s', requirements)
-
     buildInputs = user_package_additions(build_inputs)
-    logger.debug('Build Inputs: %s', buildInputs)
-
     setupRequires = user_package_additions(setup_requires)
-    logger.debug('Set Requirements: %s', setupRequires)
+
+    cfg = config.read(rc_file,
+                      inputs=requirements,
+                      setupRequires=setupRequires,
+                      buildInputs=buildInputs)
+
+    logger.debug('Requirements %s', cfg.requirements.inputs)
+    logger.debug('Packages %s', cfg.requirements.packages)
+    logger.debug('Build Inputs: %s', cfg.build_inputs)
+    logger.debug('Set Requirements: %s', cfg.setup_requires)
+
 
     if not os.path.exists(config_dir):
         logger.debug('Creating missing config dir %s', config_dir)
         os.makedirs(config_dir)
 
 
-    if requirements:
-        reqs = do_requirements(requirements)
+    if cfg.requirements.inputs:
+        reqs = do_requirements(cfg.requirements.inputs)
 
     else:
         reqs = Requirements()
 
-    for name in package:
+    for name in cfg.requirements.packages:
         reqs.add(name)
 
     store = Store(path=os.path.join(config_dir, 'store.dat'))
@@ -112,7 +120,7 @@ def main(version, requirements, package, build_inputs, setup_requires, config_di
 
     ################################################################
 
-    reqs.build_graph(buildInputs=buildInputs)
+    reqs.build_graph(buildInputs=cfg.build_inputs)
 
     ################################################################
 
@@ -137,8 +145,8 @@ def main(version, requirements, package, build_inputs, setup_requires, config_di
     nix_packages = [
         nix.Package(package=packages[p.name],
                     pypi=pypi_packages[p.name], doCheck=False,
-                    buildInputs=buildInputs,
-                    setupRequires=setupRequires[p.name])
+                    buildInputs=cfg.build_inputs,
+                    setupRequires=cfg.setup_requires.get(p.name, []))
 
         for p in packages.values()]
 
