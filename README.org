@@ -77,8 +77,8 @@
   1. Clone this repository:
 
      #+BEGIN_EXAMPLE
-     $ git clone git://github.com/badi/pip2nix
-     $ cd pip2nix
+     $ git clone git://github.com/badi/nix-pip
+     $ cd nix-pip
      #+END_EXAMPLE
 
   2. Install using =nix-env=
