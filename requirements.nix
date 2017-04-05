@@ -106,6 +106,18 @@ rec {
       doCheck = false;
     }
     ;
+  pyyaml = buildPythonPackage {
+      name = "pyyaml-3.12";
+      src = fetchurl {
+        url = "https://pypi.python.org/packages/4a/85/db5a2df477072b2902b0eb892feb37d88ac635d36245a72a6a69b23b383a/PyYAML-3.12.tar.gz";
+        sha256 = "592766c6303207a20efc445587778322d7f73b161bd994f227adaa341ba212ab";
+      };
+      format = "setuptools";
+      buildInputs = [  ];
+      propagatedBuildInputs = [  ];
+      doCheck = false;
+    }
+    ;
   requests = buildPythonPackage {
       name = "requests-2.13.0";
       src = fetchurl {
