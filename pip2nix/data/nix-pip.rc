@@ -1,0 +1,15 @@
+# -*- mode: yaml -*-
+
+requirements:
+  inputs:
+    - requirements.txt
+  output: requirements.nix
+  packages: []
+
+setup_requires: {}
+  # keys: package name
+  # values: list of package names
+
+build_inputs: {}
+  # keys: package name
+  # values: list of package names
