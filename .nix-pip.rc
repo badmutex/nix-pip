@@ -1,0 +1,16 @@
+# -*- mode: yaml -*-
+
+requirements:
+  inputs:
+    - requirements.open
+  output: requirements.nix
+  packages: []
+
+setup_requires:
+  munch:
+    - six
+
+build_inputs:
+  pygraphviz:
+    - graphviz
+    - pkgconfig
