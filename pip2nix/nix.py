@@ -94,10 +94,12 @@ class Package(HasTraits):
                            sha256=self.pypi.pinned.sha256)
 
         inputs = self.buildInputs.get(self.package.name, [])
+        inputs.sort()
         buildInputs = ' '.join(map(nixifyName, inputs))
 
         propagatedBuildInputs = [nixifyName(p.name) for p in self.package.dependencies] + \
                                 self.setupRequires
+        propagatedBuildInputs.sort()
 
 
         drv = mkDerivation_tmpl.format(
