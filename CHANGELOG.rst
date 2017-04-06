@@ -1,8 +1,8 @@
 Changelog
 =========
 
-%%version%% (unreleased)
-------------------------
+v0.2.0 (2017-04-06)
+-------------------
 
 New
 ~~~
@@ -60,11 +60,17 @@ New
 Changes
 ~~~~~~~
 
+- Remove obsolete requirement from readme. [Badi' Abdul-Wahid]
+
+- Update readme. [Badi' Abdul-Wahid]
+
 - Sort ``inputs`` and ``propagatedBuildInputs`` lexicographically.
   [Badi' Abdul-Wahid]
 
 Fix
 ~~~
+
+- Change name of repository to nix-pip in readme. [Badi' Abdul-Wahid]
 
 - Fix type error on sorted buildInputs. [Badi' Abdul-Wahid]
 
