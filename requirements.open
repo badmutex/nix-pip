@@ -6,4 +6,4 @@ networkx
 pygraphviz
 click
 coloredlogs
-pyyaml
+ruamel.yaml

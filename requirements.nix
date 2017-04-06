@@ -106,18 +106,6 @@ rec {
       doCheck = false;
     }
     ;
-  pyyaml = buildPythonPackage {
-      name = "pyyaml-3.12";
-      src = fetchurl {
-        url = "https://pypi.python.org/packages/4a/85/db5a2df477072b2902b0eb892feb37d88ac635d36245a72a6a69b23b383a/PyYAML-3.12.tar.gz";
-        sha256 = "592766c6303207a20efc445587778322d7f73b161bd994f227adaa341ba212ab";
-      };
-      format = "setuptools";
-      buildInputs = [ libyaml ];
-      propagatedBuildInputs = [  ];
-      doCheck = false;
-    }
-    ;
   requests = buildPythonPackage {
       name = "requests-2.13.0";
       src = fetchurl {
@@ -130,11 +118,47 @@ rec {
       doCheck = false;
     }
     ;
+  ruamel-ordereddict = buildPythonPackage {
+      name = "ruamel.ordereddict-0.4.9";
+      src = fetchurl {
+        url = "https://pypi.python.org/packages/b1/17/97868578071068fe7d115672b52624d421ff24e5e802f65d6bf3ea184e8f/ruamel.ordereddict-0.4.9.tar.gz";
+        sha256 = "7058c470f131487a3039fb9536dda9dd17004a7581bdeeafa836269a36a2b3f6";
+      };
+      format = "setuptools";
+      buildInputs = [  ];
+      propagatedBuildInputs = [  ];
+      doCheck = false;
+    }
+    ;
+  ruamel-yaml = buildPythonPackage {
+      name = "ruamel.yaml-0.14.5";
+      src = fetchurl {
+        url = "https://pypi.python.org/packages/5c/13/c120a06b3add0f9763ca9190e5f6edb9faf9d34b158dd3cff7cc9097be03/ruamel.yaml-0.14.5.tar.gz";
+        sha256 = "a57379a23002460e1645950aba97fd6fbcf2b0818c95c0f340f7e522875ba6b0";
+      };
+      format = "setuptools";
+      buildInputs = [ libyaml ];
+      propagatedBuildInputs = [ ruamel-ordereddict typing ];
+      doCheck = false;
+    }
+    ;
   traits = buildPythonPackage {
       name = "traits-4.6.0";
       src = fetchurl {
         url = "https://pypi.python.org/packages/56/47/03f50e82e1ff1e8a602c5f2cf12f08675f79a7169629fe4ce521e59d265f/traits-4.6.0.tar.bz2";
         sha256 = "c71c3165526e5375f74358968fd70a258a65d6c8768210ee4e4f88347a4ab853";
+      };
+      format = "setuptools";
+      buildInputs = [  ];
+      propagatedBuildInputs = [  ];
+      doCheck = false;
+    }
+    ;
+  typing = buildPythonPackage {
+      name = "typing-3.6.1";
+      src = fetchurl {
+        url = "https://pypi.python.org/packages/17/75/3698d7992a828ad6d7be99c0a888b75ed173a9280e53dbae67326029b60e/typing-3.6.1.tar.gz";
+        sha256 = "c36dec260238e7464213dcd50d4b5ef63a507972f5780652e835d0228d0edace";
       };
       format = "setuptools";
       buildInputs = [  ];
