@@ -13,7 +13,7 @@ setup (
     include_package_data = True,
     entry_points = {
         'console_scripts': [
-            'pip2nix=pip2nix.main:entrypoint',
+            'nix-pip=pip2nix.main:entrypoint',
         ],
     },
 )
