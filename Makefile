@@ -1,5 +1,5 @@
 
-.PHONY: dev install
+.PHONY: dev install changelog
 
 dev:
 	nix-shell
@@ -7,3 +7,5 @@ dev:
 install:
 	nix-env -f . -i
 
+changelog:
+	gitchangelog >CHANGELOG.rst

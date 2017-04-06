@@ -4,5 +4,5 @@ NEW_VERSION="$1"
 
 ./devtools/set-version "$NEW_VERSION"
 git tag "v$NEW_VERSION"
-gitchangelog >CHANGELOG.rst
+make changelog
 git commit -m "chg:dev: update changelog" CHANGELOG.rst
