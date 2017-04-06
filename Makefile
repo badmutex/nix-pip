@@ -1,18 +1,9 @@
 
-MKVENV = devtools/mkvenv
+.PHONY: dev install
 
-LOCFILES = $(addsuffix .lock, $(basename $(wildcard test/*.open)))
+dev:
+	nix-shell
 
-.PHONY: all
-all: requirements.lock $(LOCFILES)
+install:
+	nix-env -f . -i
 
-
-requirements.lock: requirements.open
-	touch $@
-	pip install -r $@
-	pip install -r $^
-	pip freeze >$@
-
-
-test/%.lock: test/%.open $(MKVENV)
-	$(MKVENV) $(basename $(notdir $<)) $(basename $<)
