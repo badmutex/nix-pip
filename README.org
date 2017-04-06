@@ -69,8 +69,13 @@
 
 * Examples
 
-  =nix-pip= uses itself to manage dependencies.
-  See for instance [[file:.nix-pip.rc][.nix-pip.rc]] for current settings.
+  =nix-pip= uses itself to manage dependencies.  See for instance
+  [[file:.nix-pip.rc][.nix-pip.rc]] for current settings.  When installing (see [[file:Makefile][make
+  install]]) or entering a shell (=nix-shell=), the requirements are
+  read from [[file:requirements.open][requirements.open]] (usually processed by =pip install -r=)
+  and the corresponding derivation looked up in [[file:requirements.nix][requirements.nix]] to
+  build the python interpreter. See [[file:default.nix][default.nix]] for details on how
+  this is done. =nix-pip= is used to generate =requirements.nix=.
 
 * Installation
 
