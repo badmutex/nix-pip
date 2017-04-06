@@ -113,7 +113,7 @@ rec {
         sha256 = "592766c6303207a20efc445587778322d7f73b161bd994f227adaa341ba212ab";
       };
       format = "setuptools";
-      buildInputs = [  ];
+      buildInputs = [ libyaml ];
       propagatedBuildInputs = [  ];
       doCheck = false;
     }
