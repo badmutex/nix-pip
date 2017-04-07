@@ -2,7 +2,7 @@
 import os.path
 import pkg_resources
 
-import yaml
+from ruamel import yaml
 from munch import munchify
 
 
