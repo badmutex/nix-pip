@@ -1,6 +1,22 @@
 Changelog
 =========
 
+v0.3.1 (2017-04-07)
+-------------------
+
+Fix
+~~~
+
+- Fix invocation without a config file present. [Badi' Abdul-Wahid]
+
+- Correct incorrectly import yaml module. [Badi' Abdul-Wahid]
+
+- Correctly get nested Nix attribute name from pkgs. [Badi' Abdul-Wahid]
+
+  Specifying ``buildInputs`` like ``gcc.cc`` or
+  ``pythonPackages.cython`` due to the use of ``lib.getAttr``. This
+  switches to ``lib.getAttrFromPath``
+
 v0.3.0 (2017-04-06)
 -------------------
 
