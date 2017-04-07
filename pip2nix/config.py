@@ -6,7 +6,7 @@ from ruamel import yaml
 from munch import munchify
 
 
-def read(path=None, inputs=None, setupRequires=None, buildInputs=None):
+def read(path=None, inputs=None, packages=None, setupRequires=None, buildInputs=None):
 
     defaults = pkg_resources.resource_string(__name__, 'data/nix-pip.rc')
     default = yaml.load(defaults)
@@ -21,6 +21,9 @@ def read(path=None, inputs=None, setupRequires=None, buildInputs=None):
 
     if inputs:
         cfg['requirements']['inputs'] = inputs
+
+    if packages:
+        cfg['requirements']['packages'] = packages
 
     if setupRequires:
         cfg['setup_requires'].update(setupRequires)

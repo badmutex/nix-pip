@@ -57,12 +57,26 @@ def user_package_additions(inputs):
     for pkg, deps in inputs:
         names = str(deps).split(',')
         names = map(str.strip, names)
-        names = map(str.lower, names)
         ret[str(pkg)] = names
 
     return ret
 
 
+def load_requirements(paths=None, packages=None):
+
+    paths = paths or []
+    paths = filter(os.path.exists, paths)
+
+    reqs = Requirements()
+
+    if paths:
+        reqs = do_requirements(paths)
+
+    if packages:
+        for name in packages:
+            reqs.add(name)
+
+    return reqs
 
 
 @click.command()
@@ -92,6 +106,7 @@ def main(version, requirements, package, build_inputs, setup_requires, config_di
 
     cfg = config.read(rc_file,
                       inputs=requirements,
+                      packages=package,
                       setupRequires=setupRequires,
                       buildInputs=buildInputs)
 
@@ -106,15 +121,7 @@ def main(version, requirements, package, build_inputs, setup_requires, config_di
         os.makedirs(config_dir)
 
 
-    if cfg.requirements.inputs:
-        reqs = do_requirements(cfg.requirements.inputs)
-
-    else:
-        reqs = Requirements()
-
-    for name in cfg.requirements.packages:
-        reqs.add(name)
-
+    reqs = load_requirements(cfg.requirements.inputs, cfg.requirements.packages)
     store = Store(path=os.path.join(config_dir, 'store.dat'))
     reqs.store = store
 

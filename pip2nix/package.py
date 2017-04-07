@@ -222,13 +222,13 @@ class Graph(HasTraits):
 
     @classmethod
     def from_names(cls, names, buildInputs=None, store=None):
-        logger.debug('Building dependencygraph for names %s with %s', names, buildInputs)
         store = store or Store()
         names = sorted(set(names))
-
-        logger.info('Building dependency graph for %s', ' '.join(names))
-
         buildInputs = buildInputs or defaultdict(list)
+
+        logger.info('Building dependencygraph for %s with buildInputs %s',
+                    ' '.join(names), buildInputs)
+
         preinstalled = empty_venv_packages()
         logger.info('Preinstalled packages: %s', ', '.join(preinstalled))
 
