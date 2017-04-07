@@ -5,7 +5,7 @@
 let
 
   inherit (pkgs.lib)
-    getAttr
+    getAttrFromPath
     optional
     hasAttr
     hasPrefix
@@ -19,7 +19,7 @@ let
 
   python = pkgs.python.withPackages (ps: with ps; [virtualenv pip]);
   buildInputs = optional (stringLength buildInputNames > 0) (
-    map (name: getAttr name pkgs) (splitString " " buildInputNames)
+    map (name: getAttrFromPath (splitString "." name) pkgs) (splitString " " buildInputNames)
   );
 in
 
