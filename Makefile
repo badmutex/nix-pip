@@ -1,6 +1,8 @@
 
 .PHONY: dev install changelog
 
+default: test
+
 dev:
 	nix-shell
 
