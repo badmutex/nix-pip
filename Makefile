@@ -1,5 +1,5 @@
 
-.PHONY: dev install changelog test
+.PHONY: dev install changelog test dockertest
 
 default: test
 
@@ -14,3 +14,9 @@ changelog:
 
 test:
 	nix-shell --command 'py.test tests/test.py'
+
+dockertest:
+	docker run -v $(PWD):/data --rm nixos/nix:latest bash /data/tests/docker.sh
+# this runs the same test as above in a docker container
+
+
