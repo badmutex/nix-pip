@@ -1,0 +1,17 @@
+# -*- mode; yaml -*-
+
+requirements:
+  inputs:
+    - requirements.txt
+  output: requirements.nix
+  packages: []
+
+build_inputs:
+  cryptography:
+    - openssl
+  cffi:
+    - libffi
+
+setup_requires:
+  cryptography:
+    - packaging
