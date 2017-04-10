@@ -3,6 +3,6 @@
 
 set -e
 nix-channel --update
-nix-env -iA nixpkgs.gnumake
+nix-env -iA nixpkgs.{gnumake,git,graphviz-nox}
 cp -R /data /test
 make -C /test
