@@ -1,5 +1,5 @@
 
-.PHONY: dev install changelog
+.PHONY: dev install changelog test
 
 default: test
 
