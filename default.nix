@@ -11,6 +11,7 @@ let
     hasPrefix
     fileContents
     filter
+    replaceStrings
     splitString
     stringLength
     ;
@@ -32,7 +33,14 @@ let
     let
       cleaner = line: !(hasPrefix "#" line) && (stringLength line > 0);
       lines = splitString "\n" (fileContents file);
-    in filter cleaner lines;
+
+      fixDots = replaceStrings ["."] ["-"];
+      # dotted names are valid python pkg names, but are not what we
+      # want in a Nix pkg set. `nix-pip` applies this transformation
+      # when generating the package set, which is needed when reading
+      # in the python requirements from a file or other input.
+
+    in map fixDots (filter cleaner lines);
 
   findPackages = set: packageNames:
     let
