@@ -3,6 +3,7 @@
 requirements:
   inputs:
     - requirements.open
+    - test_requirements.open
   output: requirements.nix
   packages: []
 

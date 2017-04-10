@@ -94,6 +94,18 @@ rec {
       doCheck = false;
     }
     ;
+  py = buildPythonPackage {
+      name = "py-1.4.33";
+      src = fetchurl {
+        url = "https://pypi.python.org/packages/2a/a5/139ca93a9ffffd9fc1d3f14be375af3085f53cc490c508cf1c988b886baa/py-1.4.33.tar.gz";
+        sha256 = "1f9a981438f2acc20470b301a07a496375641f902320f70e31916fe3377385a9";
+      };
+      format = "setuptools";
+      buildInputs = [  ];
+      propagatedBuildInputs = [  ];
+      doCheck = false;
+    }
+    ;
   pygraphviz = buildPythonPackage {
       name = "pygraphviz-1.3.1";
       src = fetchurl {
@@ -103,6 +115,18 @@ rec {
       format = "setuptools";
       buildInputs = [ graphviz pkgconfig ];
       propagatedBuildInputs = [  ];
+      doCheck = false;
+    }
+    ;
+  pytest = buildPythonPackage {
+      name = "pytest-3.0.7";
+      src = fetchurl {
+        url = "https://pypi.python.org/packages/00/e9/f77dcd80bdb2e52760f38dbd904016da018ab4373898945da744e5e892e9/pytest-3.0.7.tar.gz";
+        sha256 = "b70696ebd1a5e6b627e7e3ac1365a4bc60aaf3495e843c1e70448966c5224cab";
+      };
+      format = "setuptools";
+      buildInputs = [  ];
+      propagatedBuildInputs = [ py ];
       doCheck = false;
     }
     ;
