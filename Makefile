@@ -9,3 +9,6 @@ install:
 
 changelog:
 	gitchangelog >CHANGELOG.rst
+
+test:
+	nix-shell --command 'py.test tests/test.py'
