@@ -2,3 +2,4 @@
 - .venv
 - venv
 - *.pyc
+- /tests/cloudmesh.core*/cloudmesh.core
