@@ -13,7 +13,7 @@ changelog:
 	gitchangelog >CHANGELOG.rst
 
 test:
-	nix-shell --command 'py.test tests/test.py'
+	nix-shell --command 'py.test -s tests/test.py'
 
 dockertest:
 	docker run -v $(PWD):/data --rm nixos/nix:latest bash /data/tests/docker.sh
