@@ -23,4 +23,4 @@ dockertest:
 ################################################################
 
 requirements.nix: .nix-pip.rc requirements.open test_requirements.open
-	nix-shell --command nix-pip
+	nix-shell --command 'nix-pip -l /dev/null'
