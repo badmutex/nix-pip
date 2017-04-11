@@ -4,7 +4,7 @@
 default: test
 
 dev:
-	nix-shell
+	nix-shell --argstr deployment dev
 
 install:
 	nix-env -f . -i
@@ -13,7 +13,7 @@ changelog:
 	gitchangelog >CHANGELOG.rst
 
 test:
-	nix-shell --command 'py.test -s tests/test.py'
+	nix-shell --argstr deployment dev --command 'py.test -s tests/test.py'
 
 dockertest:
 	docker run -v $(PWD):/data --rm nixos/nix:latest bash /data/tests/docker.sh
