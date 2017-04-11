@@ -102,7 +102,41 @@
     dependencies. Two of the depencencies are =cryptography= and
     =cffi= which respectively depend on =openssl= and =libffi=.
 
-  This will generate =requirements.nix=
+  This will generate =requirements.nix= and =nixpip.nix=
+
+  In your =default.nix= or =shell.nix= you can import the appropriate
+  python interpreter or package sets by loading the generated
+  =nixpip.nix=:
+
+  #+BEGIN_SRC nix
+    nixpip = callPackage ./nixpip.nix { reqs = ./requirements.txt; };
+  #+END_SRC
+
+  This will find the appropriate derivation in =requirements.nix=
+  based on package names in =requirements.txt=.
+
+  You can then use =nixpip.requirements.reqs= or =nixpip.python.reqs=
+  to refer to the list of derivations for the =reqs= requirements or a
+  derivation for a python interpreter having those requirements.
+
+  You can provide several different requirement sets to =nixpip.nix=.
+
+  #+BEGIN_SRC nix
+    foo = callPackage ./nixpip.nix {
+      production = ./requirements.txt;
+      docs = ./requirements-docs.txt;
+      testing = ./requirements-test.txt;
+    }
+  #+END_SRC
+
+  so that =foo.{requirements|python}.{production|docs|testing}= are
+  the corresponding requirement sets and interpreters. Additionally,
+  there is a =all= attribute that would include the entire set of
+  requirements:
+
+  - =foo.requirements.all=
+  - =foo.python.all=
+
 
 * Assumptions
 
