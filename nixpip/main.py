@@ -88,8 +88,9 @@ def load_requirements(paths=None, packages=None):
 @click.option('-C', '--config-dir', default=default_config_dir)
 @click.option('-g', '--graphviz', help='Generate a graphviz plot in this file')
 @click.option('-o', '--out-file', default='requirements.nix')
+@click.option('-l', '--lib-file', default='nixpip.nix')
 @click.option('-f', '--rc-file', default='.nix-pip.rc')
-def main(version, requirements, package, build_inputs, setup_requires, config_dir, graphviz, out_file, rc_file):
+def main(version, requirements, package, build_inputs, setup_requires, config_dir, graphviz, out_file, lib_file, rc_file):
 
     version_file = pkg_resources.resource_filename(__name__, 'VERSION')
     with open(version_file) as fd:
@@ -162,6 +163,11 @@ def main(version, requirements, package, build_inputs, setup_requires, config_di
 
     with open(out_file, 'w') as fd:
         fd.write(reqs_nix)
+        logger.info('Wrote %s', fd.name)
+
+    with open(lib_file, 'w') as fd:
+        lib = pkg_resources.resource_string(__name__, 'data/nixpip.nix')
+        fd.write(lib)
         logger.info('Wrote %s', fd.name)
 
 
