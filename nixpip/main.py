@@ -1,7 +1,7 @@
 
-from pip2nix.util import default_config_dir
-from pip2nix.store import Store
-from pip2nix import config
+from nixpip.util import default_config_dir
+from nixpip.store import Store
+from nixpip import config
 
 import click
 import os

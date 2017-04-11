@@ -94,10 +94,10 @@
 
 * Usage
 
-  - =pip2nix -r requirements.txt= uses the requirements specified in the given file
-  - =pip2nix -p foo -p bar= will generate requirement sets to allow
+  - =nixpip -r requirements.txt= uses the requirements specified in the given file
+  - =nixpip -p foo -p bar= will generate requirement sets to allow
     installation of packages =foo= and =bar=
-  - =pip2nix -p foo -s cryptography packaging -i cryptography openssl
+  - =nixpip -p foo -s cryptography packaging -i cryptography openssl
     -i cffi libffi= This generates derivations for =foo= and it's
     dependencies. Two of the depencencies are =cryptography= and
     =cffi= which respectively depend on =openssl= and =libffi=.
@@ -114,7 +114,7 @@
   - Python
     See [[file:requirements.open][requirements.open]] for the python dependencies
   - Nix+Nixpkgs
-    See [[file:pip2nix/data/nixpkgs.nix][nixpkgs.nix]]
+    See [[file:nixpip/data/nixpkgs.nix][nixpkgs.nix]]
 
 * Procedure
 

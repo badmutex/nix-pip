@@ -8,7 +8,7 @@ import tempfile
 
 from contextlib import contextmanager
 
-from pip2nix.nixshell import NixShell
+from nixpip.nixshell import NixShell
 
 
 def concat(iters):
@@ -20,10 +20,10 @@ def default_config_dir():
     xdg_config_dir = os.environ.get('XDG_CONFIG_HOME')
     if xdg_config_dir:
         prefix = xdg_config_dir
-        subdir = 'pip2nix'
+        subdir = 'nixpip'
     else:
         prefix = '~'
-        subdir = '.pip2nix'
+        subdir = '.nixpip'
 
     path = os.path.join(prefix, subdir)
     return os.path.abspath(os.path.expanduser(os.path.expandvars(path)))

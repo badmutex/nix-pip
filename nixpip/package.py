@@ -12,8 +12,8 @@ from munch import munchify
 import networkx as nx
 from traits.api import HasTraits, Trait, Dict, List, Str, Set, This, Bool
 
-from pip2nix.util import concat, tmpvenv
-from pip2nix.store import Store
+from nixpip.util import concat, tmpvenv
+from nixpip.store import Store
 
 
 logger = logging.getLogger(__name__)

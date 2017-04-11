@@ -1,4 +1,4 @@
-{ pkgs ? import ./pip2nix/data/nixpkgs.nix
+{ pkgs ? import ./nixpip/data/nixpkgs.nix
 }:
 
 with pkgs;
@@ -17,7 +17,7 @@ let
     ;
 
 
-  version = builtins.readFile ./pip2nix/VERSION;
+  version = builtins.readFile ./nixpip/VERSION;
 
   callPythonPackage = path: attrs: with pythonPackages;
     callPackage path ({ inherit buildPythonPackage fetchPypi; } // attrs) ;
@@ -74,7 +74,7 @@ in
 
 pythonPackages.buildPythonApplication {
   inherit version;
-  name = "pip2nix-${version}";
+  name = "nixpip-${version}";
   propagatedBuildInputs = buildInputs ++ builtins.attrValues packages;
   src = ./.;
 }

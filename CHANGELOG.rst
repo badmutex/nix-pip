@@ -23,7 +23,7 @@ v0.3.0 (2017-04-06)
 Changes
 ~~~~~~~
 
-- Rename entrypoint from ``pip2nix`` to ``nix-pip`` [Badi' Abdul-Wahid]
+- Rename entrypoint from ``nixpip`` to ``nix-pip`` [Badi' Abdul-Wahid]
 
 - Update example in readme. [Badi' Abdul-Wahid]
 

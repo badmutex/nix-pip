@@ -1,4 +1,4 @@
-{ pkgs ? import ./pip2nix/data/nixpkgs.nix
+{ pkgs ? import ./nixpip/data/nixpkgs.nix
 , name ? "test"
 , requirements ? ./requirements.nix
 }:

@@ -1,1 +1,1 @@
-recursive-include pip2nix *
+recursive-include nixpip *

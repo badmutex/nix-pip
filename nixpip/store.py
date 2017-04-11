@@ -3,7 +3,7 @@ from traits.api import HasTraits, File, Instance
 import os.path
 import shelve
 
-from pip2nix.util import default_config_dir
+from nixpip.util import default_config_dir
 
 import logging
 logger = logging.getLogger(__name__)

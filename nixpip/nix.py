@@ -1,6 +1,6 @@
 from traits.api import HasTraits, Trait, List, Dict, Str, Bool
 
-from pip2nix import pypi, package
+from nixpip import pypi, package
 
 import pkg_resources
 from cStringIO import StringIO
