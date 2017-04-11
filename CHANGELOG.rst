@@ -1,6 +1,20 @@
 Changelog
 =========
 
+v0.4.0 (2017-04-11)
+-------------------
+
+New
+~~~
+
+- Learned to write library file (./nixpip.nix by default) [Badi' Abdul-
+  Wahid]
+
+Changes
+~~~~~~~
+
+- Update readme. [Badi' Abdul-Wahid]
+
 v0.3.1 (2017-04-07)
 -------------------
 
@@ -23,7 +37,7 @@ v0.3.0 (2017-04-06)
 Changes
 ~~~~~~~
 
-- Rename entrypoint from ``nixpip`` to ``nix-pip`` [Badi' Abdul-Wahid]
+- Rename entrypoint from ``pip2nix`` to ``nix-pip`` [Badi' Abdul-Wahid]
 
 - Update example in readme. [Badi' Abdul-Wahid]
 
