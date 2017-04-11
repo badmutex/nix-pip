@@ -20,3 +20,7 @@ dockertest:
 # this runs the same test as above in a docker container
 
 
+################################################################
+
+requirements.nix: .nix-pip.rc requirements.open test_requirements.open
+	nix-shell --command nix-pip
