@@ -21,7 +21,6 @@ let
   }."${deployment}";
 
   buildInputs = [
-    nixpip.python."${name}"
     cacert
     libffi
     openssl
@@ -35,7 +34,7 @@ in
 pythonPackages.buildPythonApplication {
   inherit version;
   name = "nixpip-${version}";
-  BuildInputs = buildInputs;
+  buildInputs = buildInputs;
   propagatedBuildInputs = nixpip.requirements."${name}";
   src = ./.;
 }
