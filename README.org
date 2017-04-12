@@ -31,16 +31,14 @@
       - requirements-test.txt
       #+END_SRC
 
-      - output: the output file to generate
-        default: =requirements.nix=
+    - output: the output file to generate default: =requirements.nix=
 
-      - packages: list of extra python package requirements
-        eg:
+    - packages: list of extra python package requirements eg:
 
-        #+BEGIN_SRC yaml
-        - requests
-        - vcversioner==2.16.0.0
-        #+END_SRC
+      #+BEGIN_SRC yaml
+      - requests
+      - vcversioner==2.16.0.0
+      #+END_SRC
 
     *setup_requires* and *build_inputs*
 
@@ -65,7 +63,6 @@
 
     The ``build_inputs`` entries map a python package name to the Nix
     derivation names relative the top level of the Nix packge set.
-
 
 * Examples
 
@@ -136,12 +133,6 @@
 
   - =foo.requirements.all=
   - =foo.python.all=
-
-
-* Assumptions
-
-  This is intended to be used for projects which can already be
-  installed using =pip=.
 
 * Requirements
 
