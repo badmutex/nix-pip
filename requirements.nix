@@ -154,14 +154,14 @@ rec {
     }
     ;
   ruamel-yaml = buildPythonPackage {
-      name = "ruamel.yaml-0.14.5";
+      name = "ruamel.yaml-0.14.10";
       src = fetchurl {
-        url = "https://pypi.python.org/packages/5c/13/c120a06b3add0f9763ca9190e5f6edb9faf9d34b158dd3cff7cc9097be03/ruamel.yaml-0.14.5.tar.gz";
-        sha256 = "a57379a23002460e1645950aba97fd6fbcf2b0818c95c0f340f7e522875ba6b0";
+        url = "https://pypi.python.org/packages/20/a0/ad3533b83749f88c0ac43eceaf6b749b40257068f0744c2402149d07d7ac/ruamel.yaml-0.14.10.tar.gz";
+        sha256 = "d8254ae40cb0bc3efab02d4f2f5cd668b532f8b89f51d732e63b87b9ecf2bfc0";
       };
       format = "setuptools";
       buildInputs = [ libyaml ];
-      propagatedBuildInputs = [ ruamel-ordereddict typing ];
+      propagatedBuildInputs = [ ruamel-ordereddict ];
       doCheck = false;
     }
     ;
@@ -170,18 +170,6 @@ rec {
       src = fetchurl {
         url = "https://pypi.python.org/packages/56/47/03f50e82e1ff1e8a602c5f2cf12f08675f79a7169629fe4ce521e59d265f/traits-4.6.0.tar.bz2";
         sha256 = "c71c3165526e5375f74358968fd70a258a65d6c8768210ee4e4f88347a4ab853";
-      };
-      format = "setuptools";
-      buildInputs = [  ];
-      propagatedBuildInputs = [  ];
-      doCheck = false;
-    }
-    ;
-  typing = buildPythonPackage {
-      name = "typing-3.6.1";
-      src = fetchurl {
-        url = "https://pypi.python.org/packages/17/75/3698d7992a828ad6d7be99c0a888b75ed173a9280e53dbae67326029b60e/typing-3.6.1.tar.gz";
-        sha256 = "c36dec260238e7464213dcd50d4b5ef63a507972f5780652e835d0228d0edace";
       };
       format = "setuptools";
       buildInputs = [  ];
