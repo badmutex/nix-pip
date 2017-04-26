@@ -105,11 +105,12 @@ def main(version, requirements, package, build_inputs, setup_requires, config_di
     buildInputs = user_package_additions(build_inputs)
     setupRequires = user_package_additions(setup_requires)
 
-    cfg = config.read(rc_file,
-                      inputs=requirements,
-                      packages=package,
-                      setupRequires=setupRequires,
-                      buildInputs=buildInputs)
+    cfg = config.read(rc_file)
+    cfg.add_input(*requirements)
+    cfg.set_output(out_file)
+    cfg.add_package(*package)
+    cfg.add_setup_requires(*setupRequires.items())
+    cfg.add_build_inputs(*buildInputs.items())
 
     logger.debug('Requirements %s', cfg.requirements.inputs)
     logger.debug('Packages %s', cfg.requirements.packages)
