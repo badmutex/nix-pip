@@ -9,12 +9,12 @@ from munch import munchify
 def read(path=None, inputs=None, packages=None, setupRequires=None, buildInputs=None):
 
     defaults = pkg_resources.resource_string(__name__, 'data/nix-pip.rc')
-    default = yaml.load(defaults)
+    default = yaml.safe_load(defaults)
 
     if path and os.path.exists(path):
 
         with open(path) as fd:
-            cfg = yaml.load(fd)
+            cfg = yaml.safe_load(fd)
 
     else:
         cfg = default
