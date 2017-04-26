@@ -2,6 +2,9 @@
 
 nixpkgs: import ./nixpip/data/nixpkgs.nix
 
+python: pkgs.pythonFull
+pythonPackages: pkgs.pythonPackages
+
 requirements:
   inputs:
     - requirements.open

@@ -39,6 +39,8 @@ class Requirements(HasTraits):
 class Config(HasTraits):
 
     nixpkgs = Str('import <nixpkgs> {}')
+    python = Str('pkgs.pythonFull')
+    pythonPackages = Str('pkgs.pythonPackages')
     requirements = Instance(Requirements)
     setup_requires = Dict(Str, List(Str))
     build_inputs = Dict(Str, List(Str))
@@ -46,6 +48,14 @@ class Config(HasTraits):
     def set_nixpkgs(self, pkgs):
         if pkgs:
             self.nixpkgs = pkgs
+
+    def set_python(self, drv):
+        if drv:
+            self.python = drv
+
+    def set_python_packages(self, drv):
+        if drv:
+            self.pythonPackages = drv
 
     def add_input(self, *paths):
         for path in paths:
@@ -96,7 +106,9 @@ def read(path=None):
     return Config(requirements=Requirements(**cfg.requirements),
                   setup_requires=cfg.setup_requires,
                   build_inputs=cfg.build_inputs,
-                  nixpkgs=cfg.nixpkgs
+                  nixpkgs=cfg.nixpkgs,
+                  python=cfg.python,
+                  pythonPackages=cfg.pythonPackages,
     )
 
 

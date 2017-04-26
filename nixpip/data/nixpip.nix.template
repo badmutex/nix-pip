@@ -1,10 +1,10 @@
-{ pkgs ? import <nixpkgs> {}
-, python ? pkgs.pythonFull
-, pythonPackages ? pkgs.pythonPackages
+{{ pkgs ? import <nixpkgs> {{}}
+, python ? {python}
+, pythonPackages ? {pythonPackages}
 , requirements_nix ? ./requirements.nix
 , ignoreCollisions ? true
 , ...
-}@args:
+}}@args:
 
 # Accept packages definitions and return a set of derivation sets.
 #
@@ -14,12 +14,12 @@
 #
 # Example, in shell.nix or default.nix add something like:
 #
-# nixpip = callPackage ./nixpip.nix {
+# nixpip = callPackage ./nixpip.nix {{
 #   inherit pkgs;
 #   runtime = ./requirements.txt;
 #   testing = ["pytest"];
 #   docs = ["sphinx"];
-#   };
+#   }};
 #   
 # This returns a set with "python" and "requirements" as names,
 # mapping to sets with the corresponding "runtime", "testing", and
@@ -69,12 +69,12 @@ let
     in filterAttrs (n: _: !elem n reserved_names) args;
 
   callPythonPackage = path: attrs: with pythonPackages;
-    callPackage path ({ inherit buildPythonPackage fetchPypi; } // attrs) ;
+    callPackage path ({{ inherit buildPythonPackage fetchPypi; }} // attrs) ;
 
-  packages = import requirements_nix {
+  packages = import requirements_nix {{
     inherit pkgs fetchurl;
     inherit (pythonPackages) buildPythonPackage;
-  };
+  }};
 
   allPythonPackages = pythonPackages // packages;
 
@@ -96,7 +96,7 @@ let
       findPkg = name:
         if hasAttr name set
         then getAttr name set
-        else throw "Cannot find '${name}'";
+        else throw "Cannot find '${{name}}'";
     in map findPkg packageNames;
 
 
@@ -115,13 +115,13 @@ let
 
     in mapAttrs find_drvs args';
 
-  mkPython = reqs: python.buildEnv.override {
+  mkPython = reqs: python.buildEnv.override {{
     extraLibs = reqs;
     ignoreCollisions = ignoreCollisions;
-  };
+  }};
 
-  mkAll = fn: set: { all = fn (flatten (attrValues set)); };
+  mkAll = fn: set: {{ all = fn (flatten (attrValues set)); }};
 
-in { python = (mapAttrs (_: reqs: mkPython reqs) reqs) // mkAll mkPython reqs;
+in {{ python = (mapAttrs (_: reqs: mkPython reqs) reqs) // mkAll mkPython reqs;
      requirements = reqs // mkAll id reqs;
-   }
+   }}

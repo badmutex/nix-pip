@@ -1,0 +1,16 @@
+# -*- mode: yaml -*-
+
+nixpkgs: import ../../nixpip/data/nixpkgs.nix
+
+python: pkgs.python3Full
+pythonPackages: pkgs.python3Packages
+
+requirements:
+  inputs:
+    - requirements.txt
+  output: requirements.nix
+  packages: []
+
+setup_requires: {}
+
+build_inputs: {}

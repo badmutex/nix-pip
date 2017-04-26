@@ -92,6 +92,8 @@ def load_requirements(paths=None, packages=None, nixpkgs=None):
 @click.option('-l', '--lib-file', default='nixpip.nix')
 @click.option('-f', '--rc-file', default='.nix-pip.rc')
 @click.option('-N', '--nixpkgs')
+@click.option('--python', help='The python interpreter derivation (eg pkgs.pythonFull)')
+@click.option('--python_packages', help='The python packages to use (eg pkgs.pythonPackages')
 def main(version,
          requirements,
          package,
@@ -102,7 +104,10 @@ def main(version,
          out_file,
          lib_file,
          rc_file,
-         nixpkgs):
+         nixpkgs,
+         python,
+         python_packages,
+):
 
     version_file = pkg_resources.resource_filename(__name__, 'VERSION')
     with open(version_file) as fd:
@@ -124,6 +129,8 @@ def main(version,
     cfg.add_setup_requires(*setupRequires.items())
     cfg.add_build_inputs(*buildInputs.items())
     cfg.set_nixpkgs(nixpkgs)
+    cfg.set_python(python)
+    cfg.set_python_packages(python_packages)
 
     logger.debug('Requirements %s', cfg.requirements.inputs)
     logger.debug('Packages %s', cfg.requirements.packages)
@@ -176,14 +183,17 @@ def main(version,
         for p in packages.values()]
 
 
-    reqs_nix = nix.mkPackageSet(nix_packages)
+    reqs_nix = nix.mkPackageSet(nix_packages, pythonPackages=cfg.pythonPackages)
 
     with open(out_file, 'w') as fd:
         fd.write(reqs_nix)
         logger.info('Wrote %s', fd.name)
 
     with open(lib_file, 'w') as fd:
-        lib = pkg_resources.resource_string(__name__, 'data/nixpip.nix')
+        lib = pkg_resources.resource_string(__name__, 'data/nixpip.nix.template')
+        lib = lib.format(python=cfg.python,
+                         pythonPackages=cfg.pythonPackages,
+                         )
         fd.write(lib)
         logger.info('Wrote %s', fd.name)
 

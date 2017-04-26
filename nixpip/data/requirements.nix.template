@@ -1,12 +1,11 @@
 {{ pkgs
-, buildPythonPackage
 , fetchurl
 , extras ? []
 , ...
 }}:
 
 with pkgs;
-with pythonPackages;
+with {pythonPackages};
 
 rec {{
 

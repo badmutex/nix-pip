@@ -45,7 +45,8 @@ def fetchurl(url, sha256):
     )
 
 
-def mkPackageSet(requirements):
+def mkPackageSet(requirements,
+                 pythonPackages='pythonPackages'):
 
     builder = StringIO()
 
@@ -56,7 +57,9 @@ def mkPackageSet(requirements):
         s = '{name} = {drv};\n'.format(name=pkg.name.lower(), drv=indent(drv))
         builder.write(s)
 
-    reqs = mkRequirements_tmpl.format(packages=indent(builder.getvalue()))
+    reqs = mkRequirements_tmpl.format(packages=indent(builder.getvalue()),
+                                      pythonPackages=pythonPackages
+    )
     builder.close()
 
     return reqs

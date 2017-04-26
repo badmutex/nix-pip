@@ -1,0 +1,4 @@
+
+.PHONY:
+test:
+	nix-pip
