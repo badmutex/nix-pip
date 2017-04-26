@@ -22,10 +22,10 @@ rec {
     }
     ;
   coloredlogs = buildPythonPackage {
-      name = "coloredlogs-6.0";
+      name = "coloredlogs-6.1";
       src = fetchurl {
-        url = "https://pypi.python.org/packages/d7/a8/4aa2891bd3324d57edabf4cb031db33b06570f3bb3f33ebbdd034ee6f23f/coloredlogs-6.0-py2.py3-none-any.whl";
-        sha256 = "b97cd81e39f359b4d6310881633dadc4dc77ea9b2f035941fe8c6d4be1a7d5c4";
+        url = "https://pypi.python.org/packages/b9/cb/7e985a37481de4be29d5fe5b0add9020b463916670ed7ea20d13837852a2/coloredlogs-6.1-py2.py3-none-any.whl";
+        sha256 = "7de58af28790fbd96c42b3cb0fe693aa0b4de7c8655a7f6e2a820dae1c08e6ee";
       };
       format = "wheel";
       buildInputs = [  ];
