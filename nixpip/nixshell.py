@@ -8,7 +8,8 @@ logger = logging.getLogger(__name__)
 
 class NixShell(object):
 
-    def __init__(self, pkgs='<nixpkgs>', pure=True, packages=None):
+    def __init__(self, drv='<nixpkgs>', pkgs=None, pure=True, packages=None):
+        self.drv = drv
         self.pkgs = pkgs
         self.pure = pure
         self.packages = packages or []
@@ -19,8 +20,11 @@ class NixShell(object):
 
         cmd = ' '.join(map(quote, cmd))
 
-        monoid = [['nix-shell', self.pkgs],
+        monoid = [['nix-shell', self.drv],
                   ['--command', cmd]]
+
+        if self.pkgs:
+            monoid.append(['--arg', 'pkgs', self.pkgs])
 
         if self.pure:
             monoid.append(['--pure'])

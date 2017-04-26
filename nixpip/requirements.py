@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 class Requirements(HasTraits):
 
     store = Instance(Store)
+    nixpkgs = Str
     _requirements = List(Str)
     _digest = Trait(hashlib.sha256())
     _graph = Trait(package.Graph)
@@ -86,7 +87,8 @@ class Requirements(HasTraits):
             return
 
         logger.debug('No cached graph found, computing it')
-        self._graph = package.Graph.from_names(self._requirements, buildInputs=buildInputs, store=self.store)
+        self._graph = package.Graph.from_names(self._requirements, buildInputs=buildInputs, store=self.store,
+                                               nixpkgs=self.nixpkgs)
 
     def graphviz(self, *args, **kwargs):
         "Call the underlying graph's `graphviz(*args, **kwargs)` method"

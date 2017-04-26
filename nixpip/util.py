@@ -68,13 +68,13 @@ def tmpfile():
 
 
 @contextmanager
-def tmpvenv(python='python', venvdir=None, buildInputs=None):
+def tmpvenv(python='python', venvdir=None, buildInputs=None, nixpkgs=None):
 
     import pkg_resources
     python_bare = pkg_resources.resource_filename(__name__, 'data/python-bare.nix')
 
     with tmpdir() as venvdir:
-        shell = NixShell(python_bare, packages=buildInputs)
+        shell = NixShell(python_bare, packages=buildInputs, pkgs=nixpkgs)
         shell.command(['virtualenv', venvdir])
         pip = os.path.join(venvdir, 'bin', 'pip')
         yield (shell, venvdir, pip)

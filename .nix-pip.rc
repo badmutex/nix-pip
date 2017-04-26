@@ -1,5 +1,7 @@
 # -*- mode: yaml -*-
 
+nixpkgs: import ./nixpip/data/nixpkgs.nix
+
 requirements:
   inputs:
     - requirements.open

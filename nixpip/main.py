@@ -62,7 +62,7 @@ def user_package_additions(inputs):
     return ret
 
 
-def load_requirements(paths=None, packages=None):
+def load_requirements(paths=None, packages=None, nixpkgs=None):
 
     paths = paths or []
     paths = filter(os.path.exists, paths)
@@ -76,6 +76,7 @@ def load_requirements(paths=None, packages=None):
         for name in packages:
             reqs.add(name)
 
+    reqs.nixpkgs = nixpkgs
     return reqs
 
 
@@ -90,7 +91,8 @@ def load_requirements(paths=None, packages=None):
 @click.option('-o', '--out-file', default='requirements.nix')
 @click.option('-l', '--lib-file', default='nixpip.nix')
 @click.option('-f', '--rc-file', default='.nix-pip.rc')
-def main(version, requirements, package, build_inputs, setup_requires, config_dir, graphviz, out_file, lib_file, rc_file):
+@click.option('-N', '--nixpkgs')
+def main(version, requirements, package, build_inputs, setup_requires, config_dir, graphviz, out_file, lib_file, rc_file, nixpkgs):
 
     version_file = pkg_resources.resource_filename(__name__, 'VERSION')
     with open(version_file) as fd:
@@ -111,11 +113,13 @@ def main(version, requirements, package, build_inputs, setup_requires, config_di
     cfg.add_package(*package)
     cfg.add_setup_requires(*setupRequires.items())
     cfg.add_build_inputs(*buildInputs.items())
+    cfg.set_nixpkgs(nixpkgs)
 
     logger.debug('Requirements %s', cfg.requirements.inputs)
     logger.debug('Packages %s', cfg.requirements.packages)
     logger.debug('Build Inputs: %s', cfg.build_inputs)
     logger.debug('Set Requirements: %s', cfg.setup_requires)
+    logger.info('Using nixpkgs: %s', cfg.nixpkgs)
 
 
     if not os.path.exists(config_dir):
@@ -123,7 +127,7 @@ def main(version, requirements, package, build_inputs, setup_requires, config_di
         os.makedirs(config_dir)
 
 
-    reqs = load_requirements(cfg.requirements.inputs, cfg.requirements.packages)
+    reqs = load_requirements(cfg.requirements.inputs, cfg.requirements.packages, nixpkgs=cfg.nixpkgs)
     store = Store(path=os.path.join(config_dir, 'store.dat'))
     reqs.store = store
 

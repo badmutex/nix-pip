@@ -38,9 +38,14 @@ class Requirements(HasTraits):
 
 class Config(HasTraits):
 
+    nixpkgs = Str('import <nixpkgs> {}')
     requirements = Instance(Requirements)
     setup_requires = Dict(Str, List(Str))
     build_inputs = Dict(Str, List(Str))
+
+    def set_nixpkgs(self, pkgs):
+        if pkgs:
+            self.nixpkgs = pkgs
 
     def add_input(self, *paths):
         for path in paths:
@@ -90,7 +95,9 @@ def read(path=None):
     cfg = munchify(cfg)
     return Config(requirements=Requirements(**cfg.requirements),
                   setup_requires=cfg.setup_requires,
-                  build_inputs=cfg.build_inputs)
+                  build_inputs=cfg.build_inputs,
+                  nixpkgs=cfg.nixpkgs
+    )
 
 
 

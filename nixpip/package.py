@@ -58,10 +58,10 @@ def clear_cache():
     CACHE.clear()
 
 
-def empty_venv_packages():
+def empty_venv_packages(nixpkgs=None):
     logger.info('Determining preinstalled packages in a virtualenv')
     pkgs = dict()
-    with tmpvenv() as (shell, venvdir, pip):
+    with tmpvenv(nixpkgs=nixpkgs) as (shell, venvdir, pip):
         frozen = freeze([])
         for p in frozen:
             pkgs[p.name] = Package(name=p.name, version=p.version)
@@ -193,12 +193,13 @@ def _decode_ascii(obj):
     return obj
 
 
-def freeze(packages, preinstalled=None, buildInputs=None):
+def freeze(packages, preinstalled=None, buildInputs=None, nixpkgs=None):
     preinstalled = preinstalled or set()
     buildInputs = buildInputs or list()
 
     logger.debug('Freezing packages: %s with %s', ', '.join(packages), ', '.join(buildInputs))
-    with tmpvenv(buildInputs=buildInputs) as (shell, venvdir, pip):
+    logger.debug('Freezing using nixpkgs: %r', nixpkgs)
+    with tmpvenv(buildInputs=buildInputs, nixpkgs=nixpkgs) as (shell, venvdir, pip):
         if packages:
             shell([pip, 'install'] + map(quote, packages))
 
@@ -221,18 +222,20 @@ class Graph(HasTraits):
         return getattr(self.digraph, name)
 
     @classmethod
-    def from_names(cls, names, buildInputs=None, store=None):
+    def from_names(cls, names, buildInputs=None, store=None, nixpkgs=None):
         store = store or Store()
         names = sorted(set(names))
         buildInputs = buildInputs or defaultdict(list)
 
         logger.info('Building dependencygraph for %s with buildInputs %s',
                     ' '.join(names), buildInputs)
+        logger.info('Building dependency graph for %s with nixpkgs: %r',
+                    ' '.join(names), nixpkgs)
 
         preinstalled = empty_venv_packages()
         logger.info('Preinstalled packages: %s', ', '.join(preinstalled))
 
-        frozen = freeze(names, preinstalled=preinstalled, buildInputs=concat(buildInputs.values()))
+        frozen = freeze(names, preinstalled=preinstalled, buildInputs=concat(buildInputs.values()), nixpkgs=nixpkgs)
 
         packages = []
         for p in frozen:
