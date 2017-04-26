@@ -87,7 +87,9 @@ class Requirements(HasTraits):
             return
 
         logger.debug('No cached graph found, computing it')
-        self._graph = package.Graph.from_names(self._requirements, buildInputs=buildInputs, store=self.store,
+        self._graph = package.Graph.from_names(self._requirements,
+                                               buildInputs=buildInputs,
+                                               store=self.store,
                                                nixpkgs=self.nixpkgs)
 
     def graphviz(self, *args, **kwargs):

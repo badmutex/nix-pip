@@ -92,7 +92,17 @@ def load_requirements(paths=None, packages=None, nixpkgs=None):
 @click.option('-l', '--lib-file', default='nixpip.nix')
 @click.option('-f', '--rc-file', default='.nix-pip.rc')
 @click.option('-N', '--nixpkgs')
-def main(version, requirements, package, build_inputs, setup_requires, config_dir, graphviz, out_file, lib_file, rc_file, nixpkgs):
+def main(version,
+         requirements,
+         package,
+         build_inputs,
+         setup_requires,
+         config_dir,
+         graphviz,
+         out_file,
+         lib_file,
+         rc_file,
+         nixpkgs):
 
     version_file = pkg_resources.resource_filename(__name__, 'VERSION')
     with open(version_file) as fd:
@@ -127,7 +137,9 @@ def main(version, requirements, package, build_inputs, setup_requires, config_di
         os.makedirs(config_dir)
 
 
-    reqs = load_requirements(cfg.requirements.inputs, cfg.requirements.packages, nixpkgs=cfg.nixpkgs)
+    reqs = load_requirements(cfg.requirements.inputs,
+                             cfg.requirements.packages,
+                             nixpkgs=cfg.nixpkgs)
     store = Store(path=os.path.join(config_dir, 'store.dat'))
     reqs.store = store
 
