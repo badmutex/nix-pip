@@ -1,5 +1,4 @@
 { pkgs ? import ./nixpip/data/nixpkgs.nix
-, nixpip_nix ? ./nixpip/data/nixpip.nix
 , deployment ? "user"
 }:
 
@@ -7,7 +6,7 @@ with pkgs;
 
 let
 
-  nixpip = callPackage nixpip_nix {
+  nixpip = callPackage ./nixpip.nix {
     requirements_nix = ./requirements.nix;
     runtime = ./requirements.open;
     testing = ./test_requirements.open;
