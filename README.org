@@ -1,6 +1,6 @@
 * Status
 
-  Under development, *unstable*
+  Under development, ~*unstable*~ *discontinued*
 
 * Goal
 
